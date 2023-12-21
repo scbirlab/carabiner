@@ -1,0 +1,6 @@
+myst_parser
+matplotlib
+pandas
+tensorflow
+tqdm
+./
