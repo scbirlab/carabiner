@@ -13,6 +13,7 @@ def _enumerate_file(filename: str,
                     opener: Union[Callable[[str], TextIO], 
                                   None] = None, 
                     progress: bool = True,
+                    total: Union[int, None] = None,
                     *args, **kwargs) -> Generator:
     
     if opener is None:
@@ -21,11 +22,13 @@ def _enumerate_file(filename: str,
         else:
             opener = open
     
-    enumerator = tenumerate if progress else enumerate
+    enumerator = partial(tenumerate, total=total) if progress else enumerate
 
     with opener(filename, *args, **kwargs) as f:
 
-        return enumerator(f)
+        for i, line in  enumerator(f):
+
+            yield i, line
     
 
 def count_lines(filename: str, 
@@ -66,14 +69,17 @@ def get_lines(filename: str,
 
     for i, line in _enumerate_file(filename, 
                                    progress=progress, 
+                                   total=nlines_to_read,
                                    *args, **kwargs):
 
         if i in line_numbers_to_keep:
 
-            outfile.write(line)
+            print(line, file=outfile, end='')
 
         if i > nlines_to_read:
 
             break
+
+    outfile.seek(0)
 
     return outfile

@@ -6,9 +6,10 @@ import sys
 from tqdm.auto import tqdm
 
 
-def tenumerate(x: Iterable[Any]) -> Iterable[Any]:
+def tenumerate(x: Iterable[Any], 
+               *args, **kwargs) -> Iterable[Any]:
 
-    return tqdm(enumerate(x))
+    return enumerate(tqdm(x, *args, **kwargs))
 
 
 def print_err(*args, **kwargs) -> None:

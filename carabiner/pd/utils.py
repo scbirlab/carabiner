@@ -19,11 +19,12 @@ def read_csv(filename: str,
 
     """
     
-    rows = rows or range(count_lines(filename, progress=progress) - 1)
+    if rows is None:
+        rows = range(count_lines(filename, progress=progress) - 1)
 
     if progress:
 
-        print_err(f"Reading {len(rows)} from {filename}...")
+        print_err(f"Reading {len(rows)} rows from {filename}...")
     
     lines = get_lines(filename, 
                       lines={0} | {row + 1 for row in rows}, 
