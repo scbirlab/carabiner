@@ -63,4 +63,4 @@ Add to the [issue tracker](https://www.github.com/carabiner/envs/issues).
 
 ## Documentation
 
-Available at [ReadTheDocs](https://ogilo.readthedocs.org).
+Available at [ReadTheDocs](https://carabiner-docs.readthedocs.org).
