@@ -59,7 +59,7 @@ optional arguments:
 
 ## Issues, problems, suggestions
 
-Add to the [issue tracker](https://www.github.com/carabiner/envs/issues).
+Add to the [issue tracker](https://www.github.com/carabiner/issues).
 
 ## Documentation
 
