@@ -1,2 +1,2 @@
-from .utils import *
 from . import *
+from .utils import *
