@@ -33,6 +33,14 @@ dependencies = [
   "tqdm"
 ]
 
+[project.optional-dependencies]
+
+deep = ["tensorflow", "jax"]
+mpl = ["matplotlib"]
+pd = ["pandas"]
+all = ["carabiner[deep,mpl,pd]"]
+
+
 [project.urls]
 "Homepage" = "https://github.com/scbirlab/carabiner"
 "Bug Tracker" = "https://github.com/scbirlab/carabiner/issues"
