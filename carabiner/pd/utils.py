@@ -1,34 +1,299 @@
 """Utilities for Pandas."""
 
-from typing import Sequence, Union
+from typing import Dict, Iterator, IO, Optional, Sequence, Tuple, TextIO, Union
+
+from dataclasses import dataclass, field
+import os
+import sys
 
 import pandas as pd
 
-from ..io import count_lines, get_lines
+from ..io import get_lines
 from ..utils import print_err
 
+@dataclass
+class IOFormat:
 
-def read_csv(filename: str, 
-             rows: Union[Sequence[int], None] = None, 
-             progress: bool = True,
-             *args, **kwargs):
+    in_delim: str
+    out_delim: Optional[str] = field(default=None)
+
+    def __post_init__(self):
+
+        self.out_delim = self.out_delim or self.in_delim
+
+        if self.in_delim == '\t':
+            self.in_delim = '\s+'
+
+
+_FORMAT: Dict[str, IOFormat] = {'.txt' : IOFormat('\t'), 
+                                '.tsv' : IOFormat('\t'), 
+                                '.csv' : IOFormat(','), 
+                                '.xlsx': IOFormat('xlsx')}
+
+_FORMAT.update({key[1:]: value for key, value in _FORMAT.items()})
+
+def get_formats(allow_excel: bool = True) -> Tuple[str]:
+
+    if allow_excel:
+
+        return tuple(_FORMAT)
     
-    """Read a delimited file, optionally only specific rows.
+    else:
+
+        return tuple(key for key in _FORMAT if not key.endswith('xlsx'))
     
-    Provides a progress bar by default.
+
+def format2delim(format: str,
+                 default: Optional[Union[str, IOFormat]] = None,
+                 allow_excel: bool = True) -> str:
+    
+    """Return a delimiter from its format name or extension.
+
+    Parameters
+    ----------
+    format : str
+        Format name.
+    default : str, optional
+        Default delimiter to return if delimiter not supported.
+    allow_excel: bool, optional
+        Whether to return 'xlsx' for Excel files. If `False`, 
+        returns default or `None`. Default: `True`.
+
+    Returns
+    -------
+    str or None
+        Delimiter for TSV or CSV, or "xlsx" if Excel. If not supported
+        and no default, returns None
+
+
+    Examples
+    --------
+    >>> format2delim(".csv")
+    ','
+    >>> format2delim("tsv")
+    '\t'
+    >>> format2delim(".xlsx")
+    'xlsx'
+    >>> format2delim(".cool", default=".")
+    '.'
+    >>> format2delim(".cool") is None
+    True
 
     """
     
-    if rows is None:
-        rows = range(count_lines(filename, progress=progress) - 1)
+    if isinstance(default, str):
+        default = IOFormat(default)
+
+    delim = _FORMAT.get(format.casefold(), default)
+
+    if delim.in_delim == 'xlsx' and not allow_excel:
+
+        return default
+
+    else:
+        
+        return delim
+    
+
+def sniff(file: Union[str, IO],
+          default: Optional[str] = None,
+          allow_excel: bool = True) -> str:
+
+    """Identify the delimiter of a file from its extension.
+
+    Parameters
+    ----------
+    file : str or file-like
+        Input path to file or a file-like object.
+    default : str, optional
+        Default delimiter to return if delimiter not supported.
+    allow_excel: bool, optional
+        Whether to return 'xlsx' for Excel files. If `False`, 
+        returns default or `None`. Default: `True`.
+
+    Returns
+    -------
+    str or None
+        Delimiter for TSV or CSV, or "xlsx" if Excel. If not supported
+        and no default, returns None
+
+
+    Examples
+    --------
+    >>> sniff("test.csv")
+    ','
+    >>> sniff("test.tsv")
+    '\t'
+    >>> sniff("test.xlsx")
+    'xlsx'
+    >>> sniff("test.cool", default=".")
+    '.'
+    >>> sniff("test.cool") is None
+    True
+
+    """
+
+    try:
+        filename = file.name
+    except AttributeError:  ## probably str
+        filename = file
+
+    if filename.endswith('.gz') or filename.endswith('.gzip'):
+
+        new_filename, _ = os.path.splitext(filename)
+
+        return sniff(new_filename, default, allow_excel)
+
+    else:
+
+        _, ext = os.path.splitext(filename)
+
+    return format2delim(ext.casefold(), 
+                        default=default, 
+                        allow_excel=allow_excel)
+
+
+def resolve_delim(file: Union[str, IO],
+                   format: Optional[str] = None,
+                   default: Optional[str] = None,
+                   allow_excel: bool = True) -> str:
+    
+    if format is None:
+        return sniff(file, default=default, allow_excel=allow_excel)
+    else:
+        return format2delim(format, default=default)
+
+
+def read_csv(filename: Union[str, TextIO], 
+             rows: Optional[Sequence[int]] = None, 
+             progress: bool = True,
+             *args, **kwargs) -> pd.DataFrame:
+    
+    """Read a delimited file, optionally GZIPped, optionally only specific rows.
+    
+    Provides a progress bar by default. Addtional arguments are passed to `pd.read_csv`.
+
+    Parameters
+    ----------
+    filename : str
+        Path of file to read. Optionally GZIP compressed.
+    rows : list of int, optional
+        Rows to read. If `None` (default), read all rows.
+    progress : bool
+        Whether to display a progress bar. Default: `True`.
+
+    Returns
+    -------
+    pd.DataFrame
+        Pandas DataFrame of the input file.
+
+    """
+    
+    if rows is not None:
+        rows = {0} | {row + 1 for row in rows}
+        nrows = len(rows)
+    else:
+        nrows = 'all'
 
     if progress:
-
-        print_err(f"Reading {len(rows)} rows from {filename}...")
+        print_err(f"Reading {nrows} rows from {filename}...")
     
     lines = get_lines(filename, 
-                      lines={0} | {row + 1 for row in rows}, 
+                      lines=rows, 
                       progress=progress)
         
     return pd.read_csv(lines, *args, **kwargs)
     
+
+def read_table(file: Union[str, IO],
+               format: Optional[str] = None,
+               progress: bool = False,
+               sheet_name: Union[str, int, None, list] = 0,
+               chunksize: Optional[int] = None,
+               *args, **kwargs) -> Union[pd.DataFrame, Iterator[pd.DataFrame]]:
+    
+    """Universal reader of tabular data files.
+
+    Addtional arguments are passed to `read_csv` or `pd.read_excel`.
+
+    Parameters
+    ----------
+    filename : str
+        Path of file to read in CSV, TSV or Excel format. Optionally GZIP compressed.
+    format : str
+        Format name. Default: infer from filename
+    sheet_name : str, int or list, optional
+        If reading an XLSX file, which sheets to read. Default: read all sheets.
+    
+    """
+    
+    delimiter = resolve_delim(file, format, 
+                              default='\s+')
+
+    if delimiter != 'xlsx':
+
+        return read_csv(file, 
+                        sep=delimiter.in_delim,
+                        encoding='unicode_escape',
+                        progress=progress,
+                        chunksize=chunksize,
+                        *args, **kwargs)
+    
+    else:
+
+        df = pd.read_excel(file.name, 
+                           engine='openpyxl',
+                           sheet_name=sheet_name,
+                           *args, **kwargs)
+        
+        if chunksize is None:
+
+            return df
+        
+        else:
+
+            return (df.iloc[i:(i + chunksize)] 
+                    for i in range(0, df.shape[0], chunksize))
+        
+    
+def write_stream(df: pd.DataFrame, 
+                 output: Union[TextIO, str] = sys.stdout,
+                 format: Union[str, None] = None,
+                 *args, **kwargs) -> None:
+    
+    """Write a Pandas DataFrame to a file or stdout.
+    
+    Similar to pd.write_csv() but excludes the index by default and writes to 
+    stdout by default with support for truncating output without complaining 
+    about broken pipes.
+
+    Addtional arguments are passed to `pd.write_csv`.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input Pandas DataFrame to write out.
+    output : str, optional
+        Path to output filename. Default: stdout.
+    format : str
+        Format name. Default: infer from filename
+    
+    Returns
+    -------
+    None
+    
+    """
+    
+    delimiter = resolve_delim(output, format, 
+                               allow_excel=False,
+                               default='\t')
+    
+    try:
+        df.to_csv(output,
+                  sep=delimiter.out_delim,
+                  index=False,
+                  *args, **kwargs)
+    except BrokenPipeError:
+        sys.exit(0)
+
+    return None

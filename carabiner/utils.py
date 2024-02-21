@@ -1,15 +1,14 @@
 """Miscellaneous utilities."""
 
-from typing import Any, Iterable, Mapping, Tuple, Union
+from typing import Any, Iterable, Mapping, Tuple, Optional, Union
 import sys
 
-from tqdm.auto import tqdm
 
 _CBPAL = ('#EE7733', '#0077BB', '#33BBEE', 
           '#EE3377', '#CC3311', '#009988', 
           '#BBBBBB', "#000000")
 
-def colorblind_palette(i: Union[int, slice, Iterable, None] = None) -> Tuple[str]:
+def colorblind_palette(i: Optional[Union[int, slice, Iterable]] = None) -> Tuple[str]:
 
     """Provide hexadecimal codes for a colourblind-friendly qualitative palette.
 
@@ -47,16 +46,6 @@ def colorblind_palette(i: Union[int, slice, Iterable, None] = None) -> Tuple[str
         return tuple(_CBPAL[j] for j in i)
 
 
-def tenumerate(x: Iterable[Any], 
-               *args, **kwargs) -> Iterable[Any]:
-    
-    """Enumerate with a progress bar.
-    
-    """
-
-    return enumerate(tqdm(x, *args, **kwargs))
-
-
 def print_err(*args, **kwargs) -> None:
 
     """Print to stderr instead of stdout.
@@ -68,7 +57,7 @@ def print_err(*args, **kwargs) -> None:
 
 
 def pprint_dict(x: Mapping, 
-                message: Union[str, None] = None) -> None:
+                message: Optional[str] = None) -> None:
     
     """Pretty-print a dictionary to stderr, optionally prepended with a message.
 
@@ -77,9 +66,14 @@ def pprint_dict(x: Mapping,
     Parameters
     ----------
     x : dictionary
-        Key-value pairs to print.
+        Key-value pairs or object to print.
     message : str, optional
         Message to prepend.
+
+    Raises
+    ------
+    TypeError
+        If `x` is not a dictionary or not an object with a __dict__ attribute.
 
     Examples
     --------
@@ -95,9 +89,16 @@ def pprint_dict(x: Mapping,
             option C: Nothing
 
     """
+
+    if not isinstance(x, dict):
+        try:
+            x = vars(x)
+        except TypeError:
+            raise TypeError("Input to pprint_dict is not a dict and "
+                            "does not have a __dict__ attribute.\n\t"
+                            "Attributes: {}".format(', '.join(dir(x))))
     
-    key_val_str = (f'{key}: {val:.2f}' if isinstance(val, float) else f'{key}: {val}'
-                   for key, val in x.items())
+    key_val_str = (f'{key}: {val}' for key, val in x.items())
     
     if message is not None:
         message = f'{message}:\n\t'
@@ -105,3 +106,8 @@ def pprint_dict(x: Mapping,
         message = '\t'
 
     return print_err(message + '\n\t'.join(key_val_str))
+
+
+def upper_and_lower(x: Iterable[str]) -> Tuple[str]:
+
+    return tuple(map(str.upper, x)) + tuple(map(str.casefold, x))
