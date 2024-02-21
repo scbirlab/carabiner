@@ -3,6 +3,7 @@
 from typing import Any, Iterable, Mapping, Tuple, Optional, Union
 import sys
 
+__all__ = ["colorblind_palette", "print_err", "pprint_dict", "upper_and_lower"]
 
 _CBPAL = ('#EE7733', '#0077BB', '#33BBEE', 
           '#EE3377', '#CC3311', '#009988', 
