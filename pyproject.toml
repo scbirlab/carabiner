@@ -28,8 +28,6 @@ classifiers = [
 ]
 
 dependencies = [ 
-  "matplotlib",
-  "pandas",
   "tqdm"
 ]
 
