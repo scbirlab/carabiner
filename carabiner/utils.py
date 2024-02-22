@@ -87,9 +87,9 @@ def print_err(*args, **kwargs) -> None:
     --------
     >>> print_err("Hello world!")
     Hello world!
-    >>> print_err("Hello world!", end='~\n')
+    >>> print_err("Hello world!", end='~\n')  # doctest: +NORMALIZE_WHITESPACE
     Hello world!~
-    >>> print_err("Hello", "world!", end='~\n')
+    >>> print_err("Hello", "world!", end='~\n')  # doctest: +NORMALIZE_WHITESPACE
     Hello world!~
 
     """

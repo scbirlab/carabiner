@@ -30,7 +30,7 @@ def clist(x) -> List:
     --------
     >>> clist('Hello world')
     ['Hello world']
-    >>> clist(('Hello', 'world'))
+    >>> clist(('Hello', 'world'))  # doctest: +NORMALIZE_WHITESPACE
     ['Hello', 'world']
     
     """
