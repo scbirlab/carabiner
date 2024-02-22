@@ -59,7 +59,7 @@ Subsets of lines from very large, optionally compressed, files can be read quick
 into memory. for example, we can read the first 10,000 lines of an arbitrarily large 
 file:
 
-```{python}
+```python
 >>> from carabiner.io import get_lines
 
 >>> get_lines("big-table.tsv.gz", lines=10_000)
@@ -68,13 +68,13 @@ file:
 Or random access of specific lines. Hundreds of millions of lines can be 
 parsed per minute.
 
-```{python}
+```python
 >>> get_lines("big-table.tsv.gz", lines=[999999, 10000000, 100000001])
 ```
 
 This pattern will allow sampling a random subset:
 
-```{python}
+```python
 >>> from random import sample
 >>> from carabiner.io import count_lines, get_lines
 
@@ -90,7 +90,7 @@ and flexibly than plain `pandas.read_csv`. Formats (delimiters) including Excel
 are inferred from file extensions, but can also be over-ridden with the `format` 
 parameter.
 
-```{python}
+```python
 >>> from carabiner.pd import read_table
 
 >>> read_table("big-table.tsv.gz", lines=10_000)
@@ -99,7 +99,7 @@ parameter.
 The same fast random access is availavble as for reading lines. Hundreds of 
 millions of records can be looped through per minute.
 
-```{python}
+```python
 >>> from random import sample
 >>> from carabiner.io import count_lines, get_lines
 
@@ -113,7 +113,7 @@ millions of records can be looped through per minute.
 The standard library `argparse` is robust but verbose when building command-line apps with several sub-commands, each with many options. `carabiner.cliutils` smooths this process. Apps are built by defining `CLIOptions` which are then assigned to `CLICommands` directing the functions to run when called, which then form part of a `CLIApp`.
 
 First define the options:
-```{python}
+```python
 inputs = CLIOption('inputs',
                     type=str,
                     default=[],
@@ -132,7 +132,7 @@ formatting = CLIOption('--format', '-f',
 
 Then the commands:
 
-```{python}
+```python
 test = CLICommand("test",
                     description="Test CLI subcommand using Carabiner utilities.",
                     options=[inputs, output, formatting],
@@ -143,7 +143,7 @@ The same options can be assigned to multiple commands if necessary.
 
 Fianlly, define the app and run it:
 
-```{python}
+```python
 
 app = CLIApp("Carabiner", 
              version=__version__,
@@ -162,7 +162,7 @@ Originally written in [Python Bugs](https://bugs.python.org/issue41311).
 
 Based on [this GitHub Gist](https://gist.github.com/oscarbenjamin/4c1b977181f34414a425f68589e895d1).
 
-```{python}
+```python
 >>> from carabiner.random import sample_iter
 >>> from string import ascii_letters
 >>> from itertools import chain
@@ -180,7 +180,7 @@ Based on [this GitHub Gist](https://gist.github.com/oscarbenjamin/4c1b977181f344
 
 Conveniently return the values of multiple keys from a dictionary without manually looping.
 
-```{python}
+```python
 >>> from carabiner.collections import MultiKeydict
 >>> d = MultiKeyDict(a=1, b=2, c=3)
 >>> d
@@ -201,7 +201,7 @@ In scientific programming frameworks like `numpy` we are used to functions which
 
 Scalar functions can be converted to a vectorized form easily using `@vectorize`.
 
-```{python}
+```python
 >>> @vectorize
 ... def vector_adder(x): return x + 1
 ...
@@ -219,7 +219,7 @@ Scalar functions can be converted to a vectorized form easily using `@vectorize`
 
 When it is useful for a function to not fail, but have a testable indicator of success, you can wrap in `@return_none_on_error`.
 
-```{python}
+```python
 >>> def error_maker(x): raise KeyError
 ... 
 >>> @return_none_on_error
@@ -250,7 +250,7 @@ KeyError
 
 Sometimes a decorator has optional parameters to control its behavior. It's convenient to use it in the form `@decorator` when you want the default behavior, or `@decorator(*kwargs)` when you want to custmize the behavior. Usually this requires some convoluted code, but this has been packed up into `@decorator_with_params`, to decorate your decorator definitions!
 
-```{python}
+```python
 >>> def decor(f, suffix="World"): 
 ...     return lambda x: f(x + suffix)
 ...
@@ -290,7 +290,7 @@ Hello everyone
 
 Here's a qualitative palette that's colorblind friendly.
 
-```{python}
+```python
 >>> from carabiner import colorblind_palette
 
 >>> colorblind_palette()
@@ -307,7 +307,7 @@ Here's a qualitative palette that's colorblind friendly.
 
 While `plt.subplots()` is very flexible, it requires many defaults to be defined. Instead, `carabiner.mpl.grid()` generates the `fig, ax` tuple with sensible defaults of a 1x1 grid with panel size 3 and a `constrained` layout.
 
-```{python}
+```python
 from carabiner.mpl import grid
 fig, ax = grid()  # 1x1 grid
 fig, ax = grid(ncol=3)  # 1x3 grid; figsize expands appropriately
