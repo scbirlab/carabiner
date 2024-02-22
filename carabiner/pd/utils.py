@@ -83,7 +83,7 @@ def format2delim(format: str,
                  default: Optional[Union[str, IOFormat]] = None,
                  allow_excel: bool = True) -> Optional[IOFormat]:
     
-    """Return a delimiter from its format name or extension.
+    r"""Return a delimiter from its format name or extension.
 
     Parameters
     ----------
@@ -134,7 +134,7 @@ def sniff(file: Union[str, IO],
           default: Optional[str] = None,
           allow_excel: bool = True) -> Optional[IOFormat]:
 
-    """Identify the delimiter of a file from its extension.
+    r"""Identify the delimiter of a file from its extension.
 
     Parameters
     ----------
@@ -198,7 +198,7 @@ def resolve_delim(file: Union[str, IO],
                   default: Optional[str] = None,
                   allow_excel: bool = True) -> Optional[IOFormat]:
     
-    """Identify the delimiter of a file.
+    r"""Identify the delimiter of a file.
     
     Uses the file extension, unless an explicit format is provided.
 

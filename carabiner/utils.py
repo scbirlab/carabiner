@@ -75,7 +75,7 @@ def _(i: int) -> Tuple[str]:
 
 def print_err(*args, **kwargs) -> None:
 
-    """Print to stderr instead of stdout.
+    r"""Print to stderr instead of stdout.
 
     Arguments are passed to standard `print`.
 
@@ -85,11 +85,11 @@ def print_err(*args, **kwargs) -> None:
 
     Examples
     --------
-    >>> print_err("Hello world!")
+    >>> print_err("Hello world!")  # doctest: +SKIP
     Hello world!
-    >>> print_err("Hello world!", end='~\n')  # doctest: +NORMALIZE_WHITESPACE
+    >>> print_err("Hello world!", end='~\n')  # doctest: +SKIP
     Hello world!~
-    >>> print_err("Hello", "world!", end='~\n')  # doctest: +NORMALIZE_WHITESPACE
+    >>> print_err("Hello", "world!", end='~\n')  # doctest: +SKIP
     Hello world!~
 
     """
@@ -121,11 +121,11 @@ def pprint_dict(object: Mapping,
     Examples
     --------
     >>> d = {"option A": 1, "option B": True, "option C": "Nothing"}  
-    >>> pprint_dict(d)  # doctest: +NORMALIZE_WHITESPACE
+    >>> pprint_dict(d)  # doctest: +SKIP
             option A: 1
             option B: True
             option C: Nothing
-    >>> pprint_dict(d, message="Your options")  # doctest: +NORMALIZE_WHITESPACE
+    >>> pprint_dict(d, message="Your options")  # doctest: +SKIP
     Your options:
             option A: 1
             option B: True

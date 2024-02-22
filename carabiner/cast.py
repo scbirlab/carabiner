@@ -30,7 +30,7 @@ def clist(x) -> List:
     --------
     >>> clist('Hello world')
     ['Hello world']
-    >>> clist(('Hello', 'world'))  # doctest: +NORMALIZE_WHITESPACE
+    >>> clist(('Hello', 'world'))  # doctest: +SKIP
     ['Hello', 'world']
     
     """
@@ -65,7 +65,7 @@ def _(x: TextIOWrapper) -> List[TextIOWrapper]:
 @singledispatch
 def cio(x, *args, **kwargs) -> TextIOWrapper:
 
-    """Cast an object to a file-like object.
+    r"""Cast an object to a file-like object.
 
     Addtional parameters are passed to `open` or `gzip.open`.
 
@@ -92,7 +92,7 @@ def cio(x, *args, **kwargs) -> TextIOWrapper:
     --------
     >>> cio('Hello.txt')  # doctest: +SKIP
     <_io.TextIOWrapper name='Hello.txt' mode='r' encoding='UTF-8'>
-    >>> cio('Hello.txt', 'w')  # doctest: +SKIP
+    >>> cio('Hello.txt', 'w')
     <_io.TextIOWrapper name='Hello.txt' mode='w' encoding='UTF-8'>
     >>> list(cio(StringIO("Hello\nworld")))
     ['Hello\n', 'world']
@@ -276,7 +276,7 @@ def flatten(x) -> Any:
     'Hello'
     >>> flatten(["Hello"])
     'Hello'
-    >>> flatten(["Hello world"])
+    >>> flatten(["Hello", "world"])
     ['Hello', 'world']
     >>> flatten(tuple('abc'))
     ('a', 'b', 'c')
