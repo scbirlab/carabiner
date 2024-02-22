@@ -128,7 +128,7 @@ Based on [this GitHub Gist](https://gist.github.com/oscarbenjamin/4c1b977181f344
 Conveniently return the values of multiple keys from a dictionary without manually looping.
 
 ```python
->>> from carabiner.collections import MultiKeydict
+>>> from carabiner.collections import MultiKeyDict
 >>> d = MultiKeyDict(a=1, b=2, c=3)
 >>> d
 {'a': 1, 'b': 2, 'c': 3}
