@@ -4,7 +4,7 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/carabiner-tools)
 ![PyPI](https://img.shields.io/pypi/v/carabiner-tools)
 
-Useful python utilities:
+A ragtag collection of useful Python functions and classes.
 
 ```{toctree}
 :maxdepth: 2

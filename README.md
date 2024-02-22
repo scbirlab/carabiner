@@ -4,7 +4,7 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/carabiner-tools)
 ![PyPI](https://img.shields.io/pypi/v/carabiner-tools)
 
-Useful python utilities.
+A ragtag collection of useful Python functions and classes.
 
 - [Installation](#installation)
 - [Fast and flexible reading and random access of very large files](#fast-and-flexible-reading-and-random-access-of-very-large-files)
