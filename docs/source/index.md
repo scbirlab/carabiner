@@ -1,8 +1,8 @@
 # 🪨 carabiner
 
 ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/scbirlab/carabiner/python-publish.yml)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/carabiner)
-![PyPI](https://img.shields.io/pypi/v/carabiner)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/carabiner-tools)
+![PyPI](https://img.shields.io/pypi/v/carabiner-tools)
 
 Useful python utilities:
 
