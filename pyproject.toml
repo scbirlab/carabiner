@@ -1,5 +1,5 @@
 [project]
-name = "carabiner"
+name = "carabiner-tools"
 version = "0.0.1"
 authors = [
   { name="Eachan Johnson", email="eachan.johnson@crick.ac.uk" },
@@ -36,7 +36,7 @@ dependencies = [
 deep = ["tensorflow"]
 mpl = ["matplotlib"]
 pd = ["pandas"]
-all = ["carabiner[deep,mpl,pd]"]
+all = ["carabiner-tools[deep,mpl,pd]"]
 
 
 [project.urls]
@@ -44,7 +44,7 @@ all = ["carabiner[deep,mpl,pd]"]
 "Bug Tracker" = "https://github.com/scbirlab/carabiner/issues"
 
 [project.scripts] 
-cbnr = "carabiner.cli:main"
+carabiner = "carabiner.cli:main"
 
 [tool.setuptools]
 # If there are data files included in your packages that need to be

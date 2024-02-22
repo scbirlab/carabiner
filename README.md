@@ -29,20 +29,20 @@ Useful python utilities.
 Install the pre-compiled version from GitHub:
 
 ```bash
-$ pip install carabiner
+$ pip install carabiner-tools
 ```
 
 If you want to use the `tensorflow`, `pandas`, or `matplotlib` utilities, these must be installed separately
 or together:
 
 ```bash
-$ pip install carabiner[deep]
+$ pip install carabiner-tools[deep]
 # or
-$ pip install carabiner[pd]
+$ pip install carabiner-tools[pd]
 # or
-$ pip install carabiner[mpl]
+$ pip install carabiner-tools[mpl]
 # or
-$ pip install carabiner[all]
+$ pip install carabiner-tools[all]
 ```
 
 ### From source
