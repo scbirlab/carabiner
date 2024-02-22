@@ -36,11 +36,11 @@ def decorator_with_params(decorator: TDecorator) -> TDecorator:
     >>> @decor
     ... def printer(x): print(x)
     ... 
-    >>> @decor(suffix="everyone")  # doctest: +SKIP
+    >>> @decor(suffix="everyone") 
     ... def printer2(x): print(x)
     ... 
     Traceback (most recent call last):
-    File "<stdin>", line 1, in <module>
+        ...
     TypeError: decor() missing 1 required positional argument: 'f'
     >>> decor2 = decorator_with_params(decor)
     >>> @decor2(suffix="everyone")
@@ -97,18 +97,14 @@ def return_none_on_error(f: Callable,
     >>> @return_none_on_error(exception=ValueError)
     ... def error_maker3(x): raise KeyError
     ... 
-    >>> error_maker('a')  # doctest: +SKIP
+    >>> error_maker('a')  
     Traceback (most recent call last):
-    File "<stdin>", line 1, in <module>
-    File "<stdin>", line 1, in error_maker
+        ...
     KeyError
     >>> error_maker2('a')
-    >>> error_maker3('a')  # doctest: +SKIP
+    >>> error_maker3('a') 
     Traceback (most recent call last):
-    File "<stdin>", line 1, in <module>
-    File ".../carabiner/decorators.py", line 59, in wrapped_function
-        
-    File "<stdin>", line 2, in error_maker3
+        ...
     KeyError
 
     """
