@@ -1,9 +1,9 @@
 """Utilities for IO."""
 
-from typing import Callable, Iterator, Optional, Sequence, Tuple, TextIO, Union
+from typing import Callable, Iterator, Optional, Sequence, Tuple, Union
 from functools import partial
 import gzip
-from io import StringIO, TextIOBase
+from io import StringIO, TextIOWrapper
 import math
 from tempfile import _TemporaryFileWrapper
 
@@ -11,7 +11,7 @@ from ..itertools import tenumerate
 from ..utils import print_err
 
 def _enumerate_file(filename: str, 
-                    opener: Optional[Callable[[str], TextIO]] = None, 
+                    opener: Optional[Callable[[str], TextIOWrapper]] = None, 
                     progress: bool = True,
                     total: Optional[int] = None,
                     *args, **kwargs) -> Iterator[Tuple[int, str]]:
@@ -24,7 +24,7 @@ def _enumerate_file(filename: str,
                 opener = open
         
         handle = opener(filename, *args, **kwargs)
-    elif isinstance(filename, TextIOBase) or isinstance(filename, _TemporaryFileWrapper):
+    elif isinstance(filename, TextIOWrapper) or isinstance(filename, _TemporaryFileWrapper):
         handle = filename
     else:
         raise IOError(f"Object {filename} is not a string (path) or a file-like object.")
@@ -32,12 +32,10 @@ def _enumerate_file(filename: str,
     enumerator = (partial(tenumerate, total=total) if progress 
                   else enumerate)
 
-    # with handle as f:
-
     return enumerator(handle)
     
 
-def count_lines(filename: Union[TextIO, str], 
+def count_lines(filename: Union[TextIOWrapper, str], 
                 progress: bool = True,
                 *args, **kwargs) -> int:
     
@@ -71,11 +69,11 @@ def count_lines(filename: Union[TextIO, str],
     return i + 1
 
 
-def get_lines(filename: Union[TextIO, str],
-              lines: Optional[Sequence[int]] = None,
+def get_lines(filename: Union[TextIOWrapper, str],
+              lines: Optional[Union[int, Sequence[int]]] = None,
               progress: bool = True,
-              outfile: Optional[TextIO] = None,
-              *args, **kwargs) -> TextIO:
+              outfile: Optional[TextIOWrapper] = None,
+              *args, **kwargs) -> Union[TextIOWrapper, StringIO]:
     
     """Extract lines from a file, optionally GZIPped, by line number.
 
@@ -94,7 +92,7 @@ def get_lines(filename: Union[TextIO, str],
 
     Returns
     -------
-    TextIO
+    TextIOWrapper or StringIO
         File-like object containing lines from the input file.
     
     """
@@ -102,9 +100,15 @@ def get_lines(filename: Union[TextIO, str],
     outfile = outfile or StringIO()
     
     if lines is not None:
+        
+        if isinstance(lines, int):
+            lines = range(lines)
+
         line_numbers_to_keep = set(lines)
         nlines_to_read = max(line_numbers_to_keep)
+
     else:
+
         line_numbers_to_keep = set()
         nlines_to_read = math.inf
 

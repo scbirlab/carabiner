@@ -3,10 +3,8 @@
 # from typing import Sequence
 from argparse import FileType, Namespace
 import sys
-import textwrap
 
 from .cliutils import clicommand, CLIOption, CLICommand, CLIApp
-from .utils import pprint_dict
 
 __version__ = '0.0.1'
 

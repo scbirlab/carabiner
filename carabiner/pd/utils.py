@@ -6,13 +6,30 @@ from dataclasses import dataclass, field
 import os
 import sys
 
-import pandas as pd
+try:
+    import pandas as pd
+except ImportError:
+    raise ImportError("\Pandas not installed. Try installing with pip:"
+                      "\n$ pip install pandas\n"
+                      "\nor reinstall carabiner with pandas:\n"
+                      "\n$ pip install carabiner[pd]\n")
 
 from ..io import get_lines
 from ..utils import print_err
 
 @dataclass
 class IOFormat:
+
+    """Stores delimiters for reading and writing.
+
+    Parameters
+    ----------
+    in_delim : str
+        Delimiter when reading.
+    out_delim : str, optional
+        Delimiter when writing.
+    
+    """
 
     in_delim: str
     out_delim: Optional[str] = field(default=None)
@@ -34,6 +51,25 @@ _FORMAT.update({key[1:]: value for key, value in _FORMAT.items()})
 
 def get_formats(allow_excel: bool = True) -> Tuple[str]:
 
+    """List the supported table formats.
+
+    Parameters
+    ----------
+    allow_excel : bool, optional
+        Whether to include XLSX formats. Default: `True`.
+
+    Returns
+    -------
+    tuple
+        The supported table formats.
+
+    Examples
+    --------
+    >>> get_formats()
+    ('.txt', '.tsv', '.csv', '.xlsx', 'txt', 'tsv', 'csv', 'xlsx')
+    
+    """
+
     if allow_excel:
 
         return tuple(_FORMAT)
@@ -45,7 +81,7 @@ def get_formats(allow_excel: bool = True) -> Tuple[str]:
 
 def format2delim(format: str,
                  default: Optional[Union[str, IOFormat]] = None,
-                 allow_excel: bool = True) -> str:
+                 allow_excel: bool = True) -> Optional[IOFormat]:
     
     """Return a delimiter from its format name or extension.
 
@@ -61,21 +97,20 @@ def format2delim(format: str,
 
     Returns
     -------
-    str or None
+    IOFormat or None
         Delimiter for TSV or CSV, or "xlsx" if Excel. If not supported
         and no default, returns None
-
 
     Examples
     --------
     >>> format2delim(".csv")
-    ','
+    IOFormat(in_delim=',', out_delim=',')
     >>> format2delim("tsv")
-    '\t'
+    IOFormat(in_delim='\\s+', out_delim='\t')
     >>> format2delim(".xlsx")
-    'xlsx'
+    IOFormat(in_delim='xlsx', out_delim='xlsx')
     >>> format2delim(".cool", default=".")
-    '.'
+    IOFormat(in_delim='.', out_delim='.')
     >>> format2delim(".cool") is None
     True
 
@@ -86,7 +121,7 @@ def format2delim(format: str,
 
     delim = _FORMAT.get(format.casefold(), default)
 
-    if delim.in_delim == 'xlsx' and not allow_excel:
+    if delim is not None and delim.in_delim == 'xlsx' and not allow_excel:
 
         return default
 
@@ -97,7 +132,7 @@ def format2delim(format: str,
 
 def sniff(file: Union[str, IO],
           default: Optional[str] = None,
-          allow_excel: bool = True) -> str:
+          allow_excel: bool = True) -> Optional[IOFormat]:
 
     """Identify the delimiter of a file from its extension.
 
@@ -113,23 +148,28 @@ def sniff(file: Union[str, IO],
 
     Returns
     -------
-    str or None
+    IOFormat or None
         Delimiter for TSV or CSV, or "xlsx" if Excel. If not supported
         and no default, returns None
-
 
     Examples
     --------
     >>> sniff("test.csv")
-    ','
+    IOFormat(in_delim=',', out_delim=',')
     >>> sniff("test.tsv")
-    '\t'
+    IOFormat(in_delim='\\s+', out_delim='\t')
     >>> sniff("test.xlsx")
-    'xlsx'
+    IOFormat(in_delim='xlsx', out_delim='xlsx')
     >>> sniff("test.cool", default=".")
-    '.'
+    IOFormat(in_delim='.', out_delim='.')
     >>> sniff("test.cool") is None
     True
+    >>> sniff("test.xlsx")
+    IOFormat(in_delim='xlsx', out_delim='xlsx')
+    >>> sniff("test.xlsx", allow_excel=False) is None
+    True
+    >>> sniff("test.tsv.gz")
+    IOFormat(in_delim='\\s+', out_delim='\t')
 
     """
 
@@ -154,9 +194,45 @@ def sniff(file: Union[str, IO],
 
 
 def resolve_delim(file: Union[str, IO],
-                   format: Optional[str] = None,
-                   default: Optional[str] = None,
-                   allow_excel: bool = True) -> str:
+                  format: Optional[str] = None,
+                  default: Optional[str] = None,
+                  allow_excel: bool = True) -> Optional[IOFormat]:
+    
+    """Identify the delimiter of a file.
+    
+    Uses the file extension, unless an explicit format is provided.
+
+    Parameters
+    ----------
+    file : str or file-like
+        File whose delimiter should be identified.
+    format : str, optional
+        Override the file extension to return a format.
+    default : str, optional
+        Provide this default if the extension cannot be identified,
+        otherwise return `None`.
+    allow_excel : bool, optional
+        Whether to return 'xlsx' for Excel files. If `False`, 
+        returns default or `None`. Default: `True`.
+
+    Returns
+    -------
+    IOFormat or None
+        Delimiter for TSV or CSV, or "xlsx" if Excel. If not supported
+        and no default, returns None
+
+    Examples
+    --------
+    >>> resolve_delim("test.tsv", format="csv")
+    IOFormat(in_delim=',', out_delim=',')
+    >>> resolve_delim("test.tsv", format="tsv")
+    IOFormat(in_delim='\\s+', out_delim='\t')
+    >>> resolve_delim("test.cool") is None
+    True
+    >>> resolve_delim("test.cool", default="\t")
+    IOFormat(in_delim='\\s+', out_delim='\t')
+
+    """
     
     if format is None:
         return sniff(file, default=default, allow_excel=allow_excel)
@@ -165,7 +241,7 @@ def resolve_delim(file: Union[str, IO],
 
 
 def read_csv(filename: Union[str, TextIO], 
-             rows: Optional[Sequence[int]] = None, 
+             rows: Optional[Union[int, Sequence[int]]] = None, 
              progress: bool = True,
              *args, **kwargs) -> pd.DataFrame:
     
@@ -214,7 +290,9 @@ def read_table(file: Union[str, IO],
     
     """Universal reader of tabular data files.
 
-    Addtional arguments are passed to `read_csv` or `pd.read_excel`.
+    Addtional arguments are passed to `read_csv` or `pd.read_excel`. If `chunksize` is
+    provided, returns a iterator of chunks which is lazy for non-Excel files but greedy for 
+    Excel files. Otherwise returns a DataFrame.
 
     Parameters
     ----------
@@ -224,6 +302,11 @@ def read_table(file: Union[str, IO],
         Format name. Default: infer from filename
     sheet_name : str, int or list, optional
         If reading an XLSX file, which sheets to read. Default: read all sheets.
+
+    Returns
+    -------
+    pd.DataFrame or iterator of pd.DataFrame
+        Pandas DataFrame of the input file.
     
     """
     

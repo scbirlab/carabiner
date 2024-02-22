@@ -37,11 +37,22 @@ def sample_iter(iterable: Iterable,
         Return items in random order (default). Otherwise return in
         original order.
 
-
     Returns
     -------
     list
         Sequence sampled from `iterable`.
+
+    Examples
+    --------
+    >>> from string import ascii_letters
+    >>> from itertools import chain
+    >>> from random import seed
+    >>> seed(1)
+    >>> sample_iter(chain.from_iterable(ascii_letters for _ in range(1000000)), 10)
+    ['X', 'c', 'w', 'q', 'T', 'e', 'u', 'w', 'E', 'h']
+    >>> seed(1)
+    >>> sample_iter(chain.from_iterable(ascii_letters for _ in range(1000000)), 10, shuffle_output=False)
+    ['T', 'h', 'u', 'X', 'E', 'e', 'w', 'q', 'c', 'w']
 
     """
 

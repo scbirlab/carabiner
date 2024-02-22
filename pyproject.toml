@@ -33,7 +33,7 @@ dependencies = [
 
 [project.optional-dependencies]
 
-deep = ["tensorflow", "jax"]
+deep = ["tensorflow"]
 mpl = ["matplotlib"]
 pd = ["pandas"]
 all = ["carabiner[deep,mpl,pd]"]

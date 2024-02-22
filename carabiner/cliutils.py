@@ -3,7 +3,6 @@
 from typing import Callable, Iterable, Mapping, Optional
 
 from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
-from collections import namedtuple
 from dataclasses import asdict, dataclass, field
 from datetime import timedelta
 from functools import wraps
@@ -12,10 +11,6 @@ from time import time
 
 from .decorators import decorator_with_params
 from .utils import print_err, pprint_dict
-
-_ADD_ARGUMENT_PARAMS = ('name', 'action', 'nargs', 'const', 
-                        'default', 'type', 'choices', 'required', 
-                        'help', 'metavar', 'dest')
 
 TMainFunction = Callable[[Namespace], None]
 
@@ -37,6 +32,18 @@ def clicommand(main: TMainFunction,
     -------
     Callable
         Decorator for function to be used as a main function in a CLI app.
+
+    Examples
+    --------
+    >>> from argparse import Namespace
+    >>> def main_func(args): print("Hello world!")
+    >>> args = Namespace(a=1, b="Testing")
+    >>> clicommand(main_func, name="Main program")(args)  # doctest: +SKIP
+    🚀 Processing with the following parameters:
+            a: 1
+            b: Testing
+    Hello world!
+    ⏰ Completed Main program in 0:00:00.000132
     
     """
     
@@ -66,7 +73,10 @@ def clicommand(main: TMainFunction,
 @dataclass
 class BaseCLIOption:
 
-    """
+    """Store command-line option parameters.
+
+    Takes the same parameters as `argparse.ArgumentParser().add_arguments()`, but 
+    automatically appends defaults or "Required" to help string if not already included.
 
     """
 
@@ -97,7 +107,13 @@ class BaseCLIOption:
 
 class CLIOption(BaseCLIOption):
 
-    """
+    """Store command-line option parameters.
+
+    Takes the same parameters as `argparse.ArgumentParser().add_arguments()`, but 
+    automatically appends defaults or "Required" to help string if not already included.
+
+    Provides a `replace` method so that options can be re-used but with a few
+    parameters altered.
 
     """
 
@@ -107,6 +123,11 @@ class CLIOption(BaseCLIOption):
                          kwargs=kwargs)
 
     def replace(self, **kwargs):
+
+        """Substitute named parameters and return a new `CLIOPtion`
+        object
+
+        """
 
         _copy = BaseCLIOption(**asdict(self))
 
@@ -120,7 +141,18 @@ class CLIOption(BaseCLIOption):
 @dataclass
 class CLICommand:
 
-    """
+    """Store parameters for a command-line app's subcommands.
+
+    Parameters
+    ----------
+    name : str
+        Subcommand name.
+    description : str, optional
+        Help string.
+    options : Iterable[CLIOption]
+        Iterable of option objects.
+    main: Callable
+        Function to run when this command is called.
 
     """
 
@@ -133,7 +165,21 @@ class CLICommand:
 @dataclass
 class CLIApp:
 
-    """
+    """A command-line app.
+
+    Container for subcommands, which in turn contain options. Once assembled,
+    the app can be run with the `run()` method.
+
+    Parameters
+    ----------
+    name : str
+        Name of the app.
+    version : str
+        Version of the app.
+    description : str
+        Help string.
+    commands : Iterable[CLICommand]
+        Set of subcommands.
 
     """
 
@@ -171,7 +217,7 @@ class CLIApp:
 
     def run(self):
 
-        """
+        """Run the app.
 
         """
 
