@@ -116,7 +116,7 @@ def _(x: str, *args, **kwargs):
 
 
 @cio.register
-def _(x: TextIO, *args, **kwargs):
+def _(x: TextIOWrapper, *args, **kwargs):
 
     x.close()
 
