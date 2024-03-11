@@ -118,9 +118,13 @@ def _(x: str, *args, **kwargs):
 @cio.register
 def _(x: TextIOWrapper, *args, **kwargs):
 
-    x.close()
+    if x.name in ('<stdin>', '<stdout>'):
 
-    return cio(x.name, *args, **kwargs)
+        return x
+
+    else:
+
+        return cio(x.name, *args, **kwargs)
 
 
 @cio.register
