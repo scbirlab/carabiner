@@ -35,7 +35,10 @@ def clist(x) -> List:
     
     """
 
-    return list(x)
+    try:
+        return list(x)
+    except TypeError:  ## if x is not iterable
+        return [x]
 
 
 @clist.register
