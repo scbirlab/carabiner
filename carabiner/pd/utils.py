@@ -9,7 +9,7 @@ import sys
 try:
     import pandas as pd
 except ImportError:
-    raise ImportError("\Pandas not installed. Try installing with pip:"
+    raise ImportError("Pandas not installed. Try installing with pip:"
                       "\n$ pip install pandas\n"
                       "\nor reinstall carabiner with pandas:\n"
                       "\n$ pip install carabiner[pd]\n")
@@ -39,7 +39,7 @@ class IOFormat:
         self.out_delim = self.out_delim or self.in_delim
 
         if self.in_delim == '\t':
-            self.in_delim = '\s+'
+            self.in_delim = r'\s+'
 
 
 _FORMAT: Dict[str, IOFormat] = {'.txt' : IOFormat('\t'), 
@@ -311,9 +311,9 @@ def read_table(file: Union[str, IO],
     """
     
     delimiter = resolve_delim(file, format, 
-                              default='\s+')
+                              default='\t')
 
-    if delimiter != 'xlsx':
+    if delimiter.in_delim != 'xlsx':
 
         return read_csv(file, 
                         sep=delimiter.in_delim,
