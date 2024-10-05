@@ -11,7 +11,7 @@ from .cliutils import (
     CLICommand, 
     CLIApp,
 )
-from decorators import (
+from .decorators import (
     decorator_with_params,
     return_none_on_error,
     vectorize,
