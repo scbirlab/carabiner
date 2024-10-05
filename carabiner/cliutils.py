@@ -194,6 +194,9 @@ class CLIApp:
 
         self._parser = ArgumentParser(formatter_class=RawDescriptionHelpFormatter,
                                       description=textwrap.dedent(self.description))
+        self._parser.add_argument("--version", "-v",
+                                  action="version",
+                                  version='%(prog)s {version}'.format(version=self.version))
 
         if len(self.commands) > 0:
 
@@ -215,7 +218,7 @@ class CLIApp:
 
         self._args = self._parser.parse_args()
 
-    def run(self):
+    def run(self) -> None:
 
         """Run the app.
 
