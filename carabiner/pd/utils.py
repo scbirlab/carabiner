@@ -1,6 +1,6 @@
 """Utilities for Pandas."""
 
-from typing import Dict, Iterator, IO, Optional, Sequence, Tuple, TextIO, Union
+from typing import Callable, Dict, Iterator, IO, Optional, Sequence, Tuple, TextIO, Union
 
 from dataclasses import dataclass, field
 import os
@@ -45,11 +45,11 @@ class IOFormat:
             self.in_delim = r'\s+'
 
 
-_FORMAT: Dict[str, IOFormat] = {
-    '.txt' : IOFormat('\t'), 
-    '.tsv' : IOFormat('\t'), 
-    '.csv' : IOFormat(','), 
-    '.xlsx': IOFormat('xlsx')
+_FORMAT: Dict[str, Callable[[bool], IOFormat]] = {
+    '.txt' : lambda strict: IOFormat('\t', strict=strict), 
+    '.tsv' : lambda strict: IOFormat('\t', strict=strict), 
+    '.csv' : lambda strict: IOFormat(','), 
+    '.xlsx': lambda strict: IOFormat('xlsx'),
 }
 _FORMAT.update({
     key[1:]: value for key, value in _FORMAT.items()
@@ -83,9 +83,10 @@ def get_formats(allow_excel: bool = True) -> Tuple[str]:
     
 
 def format2delim(
-    formatting: str,
-    default: Optional[Union[str, IOFormat]] = None,
-    allow_excel: bool = True
+    format: str,
+    default: Optional[str] = None,
+    allow_excel: bool = True,
+    strict: bool = True
 ) -> Optional[IOFormat]:
     
     r"""Return a delimiter from its format name or extension.
@@ -99,6 +100,8 @@ def format2delim(
     allow_excel: bool, optional
         Whether to return 'xlsx' for Excel files. If `False`, 
         returns default or `None`. Default: `True`.
+    strict : bool, optional
+        Whether to allow whitespace delimiter in TSV. Default: `False`.
 
     Returns
     -------
@@ -111,7 +114,9 @@ def format2delim(
     >>> format2delim(".csv")
     IOFormat(in_delim=',', out_delim=',', strict=True)
     >>> format2delim("tsv")
-    IOFormat(in_delim='\\s+', out_delim='\t', strict=True)
+    IOFormat(in_delim='\t', out_delim='\t', strict=True)
+    >>> format2delim("tsv", strict=False)
+    IOFormat(in_delim='\\s+', out_delim='\t', strict=False)
     >>> format2delim(".xlsx")
     IOFormat(in_delim='xlsx', out_delim='xlsx', strict=True)
     >>> format2delim(".cool", default=".")
@@ -121,21 +126,24 @@ def format2delim(
 
     """
     
-    if isinstance(default, str):
-        default = IOFormat(default)
-
-    delim = _FORMAT.get(formatting.casefold(), default)
-
-    if delim is not None and delim.in_delim == 'xlsx' and not allow_excel:
-        return default
+    if default is not None:
+        default_fn = lambda strict: IOFormat(default, strict=strict)
     else:
-        return delim
+        default_fn = lambda strict: None
+    delim = _FORMAT.get(format.casefold(), default_fn)(strict)
+
+    if delim is not None:
+        if delim.in_delim == 'xlsx' and not allow_excel:
+            return default_fn(strict)
+    
+    return delim
     
 
 def sniff(
     file: Union[str, IO],
     default: Optional[str] = None,
-    allow_excel: bool = True
+    allow_excel: bool = True,
+    strict: bool = True
 ) -> Optional[IOFormat]:
 
     r"""Identify the delimiter of a file from its extension.
@@ -149,6 +157,8 @@ def sniff(
     allow_excel: bool, optional
         Whether to return 'xlsx' for Excel files. If `False`, 
         returns default or `None`. Default: `True`.
+    strict : bool, optional
+        Whether to allow whitespace delimiter in TSV. Default: `False`.
 
     Returns
     -------
@@ -161,7 +171,9 @@ def sniff(
     >>> sniff("test.csv")
     IOFormat(in_delim=',', out_delim=',', strict=True)
     >>> sniff("test.tsv")
-    IOFormat(in_delim='\\s+', out_delim='\t', strict=True)
+    IOFormat(in_delim='\t', out_delim='\t', strict=True)
+    >>> sniff("test.tsv", strict=False)
+    IOFormat(in_delim='\\s+', out_delim='\t', strict=False)
     >>> sniff("test.xlsx")
     IOFormat(in_delim='xlsx', out_delim='xlsx', strict=True)
     >>> sniff("test.cool", default=".")
@@ -173,7 +185,7 @@ def sniff(
     >>> sniff("test.xlsx", allow_excel=False) is None
     True
     >>> sniff("test.tsv.gz")
-    IOFormat(in_delim='\\s+', out_delim='\t', strict=True)
+    IOFormat(in_delim='\t', out_delim='\t', strict=True)
 
     """
 
@@ -191,6 +203,7 @@ def sniff(
         ext.casefold(), 
         default=default, 
         allow_excel=allow_excel,
+        strict=strict,
     )
 
 
@@ -229,11 +242,11 @@ def resolve_delim(
     >>> resolve_delim("test.tsv", format="csv")
     IOFormat(in_delim=',', out_delim=',', strict=True)
     >>> resolve_delim("test.tsv", format="tsv")
-    IOFormat(in_delim='\\s+', out_delim='\t', strict=True)
+    IOFormat(in_delim='\t', out_delim='\t', strict=True)
     >>> resolve_delim("test.cool") is None
     True
     >>> resolve_delim("test.cool", default="\t")
-    IOFormat(in_delim='\\s+', out_delim='\t', strict=True)
+    IOFormat(in_delim='\t', out_delim='\t', strict=True)
 
     """
     
