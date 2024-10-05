@@ -213,7 +213,7 @@ def scattergrid(
      return fig, axes
 
 def figsaver(
-     dir: str = ".",
+     output_dir: str = ".",
      prefix: Optional[str] = None,
      dpi: int = 300, 
      format: str = 'png', 
@@ -223,7 +223,7 @@ def figsaver(
 
      Parameters
      ----------
-     dir : str, optional
+     output_dir : str, optional
           Directory to save figures. Default: ".".
      prefix : str, optional
           Prefix for filenames. Default: no prefix.
@@ -240,6 +240,9 @@ def figsaver(
           If a DataFrame is provided, it as saved as {dir}/{prefix}{name}.csv.
 
      """
+
+     if not os.path.exists(output_dir):
+          os.mkdir(output_dir)
 
      def _figsave(
           fig: figure.Figure, 
