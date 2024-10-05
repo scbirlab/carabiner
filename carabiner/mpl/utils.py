@@ -1,6 +1,6 @@
 """Utilities for matplotlib."""
 
-from typing import Any, Iterable, Mapping, Tuple, Optional
+from typing import Any, Iterable, Mapping, Tuple, Optional, Union
 from functools import wraps
 
 from pandas import DataFrame
@@ -81,7 +81,7 @@ def grid(
                ax.yaxis.set_tick_params(labelleft=True)
      return fig, axes
 
-def scatter_grid(
+def scattergrid(
      df: DataFrame, 
      grid_columns: Union[str, Iterable[str]], 
      grid_rows: Optional[Union[str, Iterable[str]]] = None, 
