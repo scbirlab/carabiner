@@ -13,6 +13,7 @@ except ImportError:
                       "\n\t$ pip install carabiner[mpl]\n")
 else:
     from matplotlib import axes, cycler, figure, rcParams
+from tqdm.auto import tqdm
 
 from ..cast import cast
 from ..utils import colorblind_palette as utils_colorblind_palette
