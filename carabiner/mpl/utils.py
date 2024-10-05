@@ -12,6 +12,7 @@ except ImportError:
                       "\n\t$ pip install carabiner[mpl]\n")
 else:
     from matplotlib import axes, cycler, figure, rcParams
+    import numpy as np
     from pandas import DataFrame
 from tqdm.auto import tqdm
 
@@ -176,6 +177,7 @@ def scattergrid(
                     extras = {"label": group_name} if not dummy_group else {}
                     if grid_row_name == grid_col_name:
                          if xscale == "log":
+                              values = group_df[grid_col_name].values
                               bins = np.geomspace(
                                    values.min(), 
                                    values.max(), 
@@ -203,5 +205,6 @@ def scattergrid(
                     xlabel=grid_col_name, 
                     ylabel=ylabel,
                )
-          ax.legend(**_legend_opts)
+          if not dummy_group:
+               ax.legend(**_legend_opts)
      return fig, axes
