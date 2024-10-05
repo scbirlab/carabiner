@@ -6,7 +6,7 @@ import sys
 
 from .cliutils import clicommand, CLIOption, CLICommand, CLIApp
 
-__version__ = '0.0.3'
+__version__ = '0.0.3.post1'
 
 @clicommand(message='Parsed arguments', name='cbnr')
 def _main(args: Namespace) -> None:

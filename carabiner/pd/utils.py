@@ -1,6 +1,6 @@
 """Utilities for Pandas."""
 
-from typing import Dict, Iterator, IO, Optional, Sequence, Tuple, TextIO, Union
+from typing import Callable, Dict, Iterator, IO, Optional, Sequence, Tuple, TextIO, Union
 
 from dataclasses import dataclass, field
 import os
@@ -9,10 +9,14 @@ import sys
 try:
     import pandas as pd
 except ImportError:
-    raise ImportError("Pandas not installed. Try installing with pip:"
-                      "\n$ pip install pandas\n"
-                      "\nor reinstall carabiner with pandas:\n"
-                      "\n$ pip install carabiner[pd]\n")
+    raise ImportError(
+        """
+        Pandas not installed. Try installing with pip:
+            $ pip install pandas
+        or reinstall carabiner with pandas:\n"
+            $ pip install carabiner[pd]
+        """
+    )
 
 from ..io import get_lines
 from ..utils import print_err
@@ -32,22 +36,24 @@ class IOFormat:
     """
 
     in_delim: str
-    out_delim: Optional[str] = field(default=None)
+    out_delim: Optional[str] = None
+    strict: bool = True
 
     def __post_init__(self):
-
         self.out_delim = self.out_delim or self.in_delim
-
-        if self.in_delim == '\t':
+        if self.in_delim == '\t' and not self.strict:
             self.in_delim = r'\s+'
 
 
-_FORMAT: Dict[str, IOFormat] = {'.txt' : IOFormat('\t'), 
-                                '.tsv' : IOFormat('\t'), 
-                                '.csv' : IOFormat(','), 
-                                '.xlsx': IOFormat('xlsx')}
-
-_FORMAT.update({key[1:]: value for key, value in _FORMAT.items()})
+_FORMAT: Dict[str, Callable[[bool], IOFormat]] = {
+    '.txt' : lambda strict: IOFormat('\t', strict=strict), 
+    '.tsv' : lambda strict: IOFormat('\t', strict=strict), 
+    '.csv' : lambda strict: IOFormat(','), 
+    '.xlsx': lambda strict: IOFormat('xlsx'),
+}
+_FORMAT.update({
+    key[1:]: value for key, value in _FORMAT.items()
+})
 
 def get_formats(allow_excel: bool = True) -> Tuple[str]:
 
@@ -71,17 +77,17 @@ def get_formats(allow_excel: bool = True) -> Tuple[str]:
     """
 
     if allow_excel:
-
         return tuple(_FORMAT)
-    
     else:
-
         return tuple(key for key in _FORMAT if not key.endswith('xlsx'))
     
 
-def format2delim(format: str,
-                 default: Optional[Union[str, IOFormat]] = None,
-                 allow_excel: bool = True) -> Optional[IOFormat]:
+def format2delim(
+    format: str,
+    default: Optional[str] = None,
+    allow_excel: bool = True,
+    strict: bool = True
+) -> Optional[IOFormat]:
     
     r"""Return a delimiter from its format name or extension.
 
@@ -94,6 +100,8 @@ def format2delim(format: str,
     allow_excel: bool, optional
         Whether to return 'xlsx' for Excel files. If `False`, 
         returns default or `None`. Default: `True`.
+    strict : bool, optional
+        Whether to allow whitespace delimiter in TSV. Default: `False`.
 
     Returns
     -------
@@ -104,35 +112,39 @@ def format2delim(format: str,
     Examples
     --------
     >>> format2delim(".csv")
-    IOFormat(in_delim=',', out_delim=',')
+    IOFormat(in_delim=',', out_delim=',', strict=True)
     >>> format2delim("tsv")
-    IOFormat(in_delim='\\s+', out_delim='\t')
+    IOFormat(in_delim='\t', out_delim='\t', strict=True)
+    >>> format2delim("tsv", strict=False)
+    IOFormat(in_delim='\\s+', out_delim='\t', strict=False)
     >>> format2delim(".xlsx")
-    IOFormat(in_delim='xlsx', out_delim='xlsx')
+    IOFormat(in_delim='xlsx', out_delim='xlsx', strict=True)
     >>> format2delim(".cool", default=".")
-    IOFormat(in_delim='.', out_delim='.')
+    IOFormat(in_delim='.', out_delim='.', strict=True)
     >>> format2delim(".cool") is None
     True
 
     """
     
-    if isinstance(default, str):
-        default = IOFormat(default)
-
-    delim = _FORMAT.get(format.casefold(), default)
-
-    if delim is not None and delim.in_delim == 'xlsx' and not allow_excel:
-
-        return default
-
+    if default is not None:
+        default_fn = lambda strict: IOFormat(default, strict=strict)
     else:
-        
-        return delim
+        default_fn = lambda strict: None
+    delim = _FORMAT.get(format.casefold(), default_fn)(strict)
+
+    if delim is not None:
+        if delim.in_delim == 'xlsx' and not allow_excel:
+            return default_fn(strict)
+    
+    return delim
     
 
-def sniff(file: Union[str, IO],
-          default: Optional[str] = None,
-          allow_excel: bool = True) -> Optional[IOFormat]:
+def sniff(
+    file: Union[str, IO],
+    default: Optional[str] = None,
+    allow_excel: bool = True,
+    strict: bool = True
+) -> Optional[IOFormat]:
 
     r"""Identify the delimiter of a file from its extension.
 
@@ -145,6 +157,8 @@ def sniff(file: Union[str, IO],
     allow_excel: bool, optional
         Whether to return 'xlsx' for Excel files. If `False`, 
         returns default or `None`. Default: `True`.
+    strict : bool, optional
+        Whether to allow whitespace delimiter in TSV. Default: `False`.
 
     Returns
     -------
@@ -155,21 +169,23 @@ def sniff(file: Union[str, IO],
     Examples
     --------
     >>> sniff("test.csv")
-    IOFormat(in_delim=',', out_delim=',')
+    IOFormat(in_delim=',', out_delim=',', strict=True)
     >>> sniff("test.tsv")
-    IOFormat(in_delim='\\s+', out_delim='\t')
+    IOFormat(in_delim='\t', out_delim='\t', strict=True)
+    >>> sniff("test.tsv", strict=False)
+    IOFormat(in_delim='\\s+', out_delim='\t', strict=False)
     >>> sniff("test.xlsx")
-    IOFormat(in_delim='xlsx', out_delim='xlsx')
+    IOFormat(in_delim='xlsx', out_delim='xlsx', strict=True)
     >>> sniff("test.cool", default=".")
-    IOFormat(in_delim='.', out_delim='.')
+    IOFormat(in_delim='.', out_delim='.', strict=True)
     >>> sniff("test.cool") is None
     True
     >>> sniff("test.xlsx")
-    IOFormat(in_delim='xlsx', out_delim='xlsx')
+    IOFormat(in_delim='xlsx', out_delim='xlsx', strict=True)
     >>> sniff("test.xlsx", allow_excel=False) is None
     True
     >>> sniff("test.tsv.gz")
-    IOFormat(in_delim='\\s+', out_delim='\t')
+    IOFormat(in_delim='\t', out_delim='\t', strict=True)
 
     """
 
@@ -179,24 +195,24 @@ def sniff(file: Union[str, IO],
         filename = file
 
     if filename.endswith('.gz') or filename.endswith('.gzip'):
-
         new_filename, _ = os.path.splitext(filename)
-
         return sniff(new_filename, default, allow_excel)
-
     else:
-
         _, ext = os.path.splitext(filename)
+    return format2delim(
+        ext.casefold(), 
+        default=default, 
+        allow_excel=allow_excel,
+        strict=strict,
+    )
 
-    return format2delim(ext.casefold(), 
-                        default=default, 
-                        allow_excel=allow_excel)
 
-
-def resolve_delim(file: Union[str, IO],
-                  format: Optional[str] = None,
-                  default: Optional[str] = None,
-                  allow_excel: bool = True) -> Optional[IOFormat]:
+def resolve_delim(
+    file: Union[str, IO],
+    format: Optional[str] = None,
+    default: Optional[str] = None,
+    allow_excel: bool = True
+) -> Optional[IOFormat]:
     
     r"""Identify the delimiter of a file.
     
@@ -224,13 +240,13 @@ def resolve_delim(file: Union[str, IO],
     Examples
     --------
     >>> resolve_delim("test.tsv", format="csv")
-    IOFormat(in_delim=',', out_delim=',')
+    IOFormat(in_delim=',', out_delim=',', strict=True)
     >>> resolve_delim("test.tsv", format="tsv")
-    IOFormat(in_delim='\\s+', out_delim='\t')
+    IOFormat(in_delim='\t', out_delim='\t', strict=True)
     >>> resolve_delim("test.cool") is None
     True
     >>> resolve_delim("test.cool", default="\t")
-    IOFormat(in_delim='\\s+', out_delim='\t')
+    IOFormat(in_delim='\t', out_delim='\t', strict=True)
 
     """
     
@@ -240,10 +256,12 @@ def resolve_delim(file: Union[str, IO],
         return format2delim(format, default=default)
 
 
-def read_csv(filename: Union[str, TextIO], 
-             rows: Optional[Union[int, Sequence[int]]] = None, 
-             progress: bool = True,
-             *args, **kwargs) -> pd.DataFrame:
+def read_csv(
+    filename: Union[str, TextIO], 
+    rows: Optional[Union[int, Sequence[int]]] = None, 
+    progress: bool = True,
+    *args, **kwargs
+) -> pd.DataFrame:
     
     """Read a delimited file, optionally GZIPped, optionally only specific rows.
     
@@ -277,17 +295,18 @@ def read_csv(filename: Union[str, TextIO],
     lines = get_lines(filename, 
                       lines=rows, 
                       progress=progress)
-        
     return pd.read_csv(lines, *args, **kwargs)
     
 
-def read_table(file: Union[str, IO],
-               format: Optional[str] = None,
-               progress: bool = False,
-               sheet_name: Union[str, int, None, list] = 0,
-               chunksize: Optional[int] = None,
-               *args, **kwargs) -> Union[pd.DataFrame, Iterator[pd.DataFrame]]:
-    
+def read_table(
+    file: Union[str, IO],
+    format: Optional[str] = None,
+    progress: bool = False,
+    sheet_name: Optional[Union[str, int, list]] = None,
+    chunksize: Optional[int] = None,
+    *args, **kwargs
+) -> Union[pd.DataFrame, Iterator[pd.DataFrame]]:
+
     """Universal reader of tabular data files.
 
     Addtional arguments are passed to `read_csv` or `pd.read_excel`. If `chunksize` is
@@ -310,39 +329,42 @@ def read_table(file: Union[str, IO],
     
     """
     
-    delimiter = resolve_delim(file, format, 
-                              default='\t')
+    delimiter = resolve_delim(
+        file, 
+        format, 
+        default='\t',
+    )
 
     if delimiter.in_delim != 'xlsx':
-
-        return read_csv(file, 
-                        sep=delimiter.in_delim,
-                        encoding='unicode_escape',
-                        progress=progress,
-                        chunksize=chunksize,
-                        *args, **kwargs)
-    
+        return read_csv(
+            file, 
+            sep=delimiter.in_delim,
+            encoding='unicode_escape',
+            progress=progress,
+            chunksize=chunksize,
+            *args, **kwargs
+        )
     else:
-
-        df = pd.read_excel(file.name, 
-                           engine='openpyxl',
-                           sheet_name=sheet_name,
-                           *args, **kwargs)
-        
+        df = pd.read_excel(
+            file.name, 
+            engine='openpyxl',
+            sheet_name=sheet_name,
+            *args, **kwargs
+        )
         if chunksize is None:
-
             return df
-        
         else:
-
-            return (df.iloc[i:(i + chunksize)] 
-                    for i in range(0, df.shape[0], chunksize))
+            return (
+                df.iloc[i:(i + chunksize)] for i in range(0, df.shape[0], chunksize)
+            )
         
     
-def write_stream(df: pd.DataFrame, 
-                 output: Union[TextIO, str] = sys.stdout,
-                 format: Union[str, None] = None,
-                 *args, **kwargs) -> None:
+def write_stream(
+    df: pd.DataFrame, 
+    output: Union[TextIO, str] = sys.stdout,
+    format: Optional[str] = None,
+    *args, **kwargs
+) -> None:
     
     """Write a Pandas DataFrame to a file or stdout.
     
@@ -367,16 +389,19 @@ def write_stream(df: pd.DataFrame,
     
     """
     
-    delimiter = resolve_delim(output, format, 
-                               allow_excel=False,
-                               default='\t')
-    
+    delimiter = resolve_delim(
+        output, 
+        format, 
+        allow_excel=False,
+        default='\t',
+    )
     try:
-        df.to_csv(output,
-                  sep=delimiter.out_delim,
-                  index=False,
-                  *args, **kwargs)
+        df.to_csv(
+            output,
+            sep=delimiter.out_delim,
+            index=False,
+            *args, **kwargs
+        )
     except BrokenPipeError:
         sys.exit(0)
-
     return None

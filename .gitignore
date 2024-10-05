@@ -11,7 +11,7 @@ Hello.txt
 .vscode
 /test/*.tsv
 /test/*.csv
-/*/__pycache__
+__pycache__/
 
 # virtualenv/venv directories
 /venv/

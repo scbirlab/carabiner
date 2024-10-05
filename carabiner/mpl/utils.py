@@ -36,6 +36,7 @@ def grid(
      sharex: Union[str, bool] = False,
      sharey: Union[str, bool] = False,
      hide_shared_ticks: bool = False,
+     square: bool = False,
      *args, **kwargs
 ) -> TFigAx:
     
@@ -58,6 +59,8 @@ def grid(
      hide_shared_ticks : bool, optional
           Whether to hide the ticks when axes have shared scales
           from setting `sharex` or `sharey`. Default: `False`.
+     square: bool
+          Whether to force panels to be square. Default: `True`.
 
      Returns
      -------
@@ -79,6 +82,9 @@ def grid(
           *args, **kwargs
      )
      all_axes = fig.axes
+     if square:
+          for ax in all_axes:
+               ax.set(aspect="equal")
      if sharex: 
           for ax in all_axes:
                ax.xaxis.set_tick_params(labelbottom=True)

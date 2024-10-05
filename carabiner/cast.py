@@ -180,15 +180,10 @@ CASTING_FUNCTIONS = dict(str=cstr,
 def _cast_base(object: Any,
                to: str,
                *args, **kwargs):
-
     try:
-
         casting_function = CASTING_FUNCTIONS[to]
-
     except KeyError:
-
         raise TypeError(f"Cannot cast {type(object).__name__} to {to}.")
-
     return casting_function(object, 
                             *args, **kwargs)
 
