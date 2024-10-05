@@ -257,7 +257,7 @@ def figsaver(
                bbox_inches='tight',
           )
           if df is not None and isinstance(df, DataFrame):
-               dataname = os.path.join(output_dir, f"{prefix}{name}.csv"
+               dataname = os.path.join(output_dir, f"{prefix}{name}.csv")
                print_err(f"Saving data at {dataname}")
                df.to_csv(dataname, index=False)
           return None
