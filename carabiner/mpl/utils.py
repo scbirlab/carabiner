@@ -3,7 +3,6 @@
 from typing import Any, Iterable, Mapping, Tuple, Optional, Union
 from functools import wraps
 
-from pandas import DataFrame
 try:
     import matplotlib.pyplot as plt
 except ImportError:
@@ -13,6 +12,7 @@ except ImportError:
                       "\n\t$ pip install carabiner[mpl]\n")
 else:
     from matplotlib import axes, cycler, figure, rcParams
+    from pandas import DataFrame
 from tqdm.auto import tqdm
 
 from ..cast import cast
