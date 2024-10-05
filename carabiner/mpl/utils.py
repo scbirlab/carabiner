@@ -242,7 +242,7 @@ def figsaver(
      """
 
      def _figsave(
-          fig: Figure, 
+          fig: figure.Figure, 
           name: str, 
           df: Optional[DataFrame] = None
      ) -> None:
@@ -261,4 +261,5 @@ def figsaver(
                print_err(f"Saving data at {dataname}")
                df.to_csv(dataname, index=False)
           return None
-     return _figave
+
+     return _figsave
