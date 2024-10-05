@@ -109,13 +109,13 @@ def format2delim(
     Examples
     --------
     >>> format2delim(".csv")
-    IOFormat(in_delim=',', out_delim=',')
+    IOFormat(in_delim=',', out_delim=',', strict=True)
     >>> format2delim("tsv")
-    IOFormat(in_delim='\\s+', out_delim='\t')
+    IOFormat(in_delim='\\s+', out_delim='\t', strict=True)
     >>> format2delim(".xlsx")
-    IOFormat(in_delim='xlsx', out_delim='xlsx')
+    IOFormat(in_delim='xlsx', out_delim='xlsx', strict=True)
     >>> format2delim(".cool", default=".")
-    IOFormat(in_delim='.', out_delim='.')
+    IOFormat(in_delim='.', out_delim='.', strict=True)
     >>> format2delim(".cool") is None
     True
 
@@ -159,21 +159,21 @@ def sniff(
     Examples
     --------
     >>> sniff("test.csv")
-    IOFormat(in_delim=',', out_delim=',')
+    IOFormat(in_delim=',', out_delim=',', strict=True)
     >>> sniff("test.tsv")
-    IOFormat(in_delim='\\s+', out_delim='\t')
+    IOFormat(in_delim='\\s+', out_delim='\t', strict=True)
     >>> sniff("test.xlsx")
-    IOFormat(in_delim='xlsx', out_delim='xlsx')
+    IOFormat(in_delim='xlsx', out_delim='xlsx', strict=True)
     >>> sniff("test.cool", default=".")
-    IOFormat(in_delim='.', out_delim='.')
+    IOFormat(in_delim='.', out_delim='.', strict=True)
     >>> sniff("test.cool") is None
     True
     >>> sniff("test.xlsx")
-    IOFormat(in_delim='xlsx', out_delim='xlsx')
+    IOFormat(in_delim='xlsx', out_delim='xlsx', strict=True)
     >>> sniff("test.xlsx", allow_excel=False) is None
     True
     >>> sniff("test.tsv.gz")
-    IOFormat(in_delim='\\s+', out_delim='\t')
+    IOFormat(in_delim='\\s+', out_delim='\t', strict=True)
 
     """
 
@@ -227,13 +227,13 @@ def resolve_delim(
     Examples
     --------
     >>> resolve_delim("test.tsv", format="csv")
-    IOFormat(in_delim=',', out_delim=',')
+    IOFormat(in_delim=',', out_delim=',', strict=True)
     >>> resolve_delim("test.tsv", format="tsv")
-    IOFormat(in_delim='\\s+', out_delim='\t')
+    IOFormat(in_delim='\\s+', out_delim='\t', strict=True)
     >>> resolve_delim("test.cool") is None
     True
     >>> resolve_delim("test.cool", default="\t")
-    IOFormat(in_delim='\\s+', out_delim='\t')
+    IOFormat(in_delim='\\s+', out_delim='\t', strict=True)
 
     """
     
