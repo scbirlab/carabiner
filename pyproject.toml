@@ -35,7 +35,7 @@ dependencies = [
 [project.optional-dependencies]
 
 deep = ["tensorflow"]
-mpl = ["matplotlib"]
+mpl = ["pandas", "matplotlib"]
 pd = ["pandas"]
 all = ["carabiner-tools[deep,mpl,pd]"]
 
