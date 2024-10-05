@@ -1,6 +1,6 @@
 """Utilities for matplotlib."""
 
-from typing import Any, Iterable, Mapping, Tuple, Optional, Union
+from typing import Any, Callable, Iterable, Mapping, Tuple, Optional, Union
 from functools import wraps
 import os
 
@@ -217,7 +217,7 @@ def figsaver(
      prefix: Optional[str] = None,
      dpi: int = 300, 
      format: str = 'png', 
-) -> Callable[[Figure, str, int, str, Optional[DataFrame]], None]:
+) -> Callable[[figure.Figure, str, int, str, Optional[DataFrame]], None]:
 
      """Create a function to save figures in a predefined location.
 
