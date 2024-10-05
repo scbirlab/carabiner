@@ -78,11 +78,12 @@ def grid(
           sharey=sharey,
           *args, **kwargs
      )
+     all_axes = fig.axes
      if sharex: 
-          for ax in axes:
+          for ax in all_axes:
                ax.xaxis.set_tick_params(labelbottom=True)
      if sharey:
-          for ax in axes:
+          for ax in all_axes:
                ax.yaxis.set_tick_params(labelleft=True)
      return fig, axes
 
