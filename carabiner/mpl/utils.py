@@ -226,14 +226,19 @@ def scattergrid(
                          if xscale == "log":
                               values = group_df.query(f"{grid_col_name} > 0")[grid_col_name].values
                               values = values[np.isfinite(values)]
-                              values_min, values_max = values.min(), values.max()
-                              if values_min == values_max:
-                                   hist_max = hist_min + 1.
-                              bins = np.geomspace(
-                                   values_min, 
-                                   hist_max, 
-                                   num=n_bins,
-                              )
+                              if values.size > 0:
+                                   values_min, values_max = values.min(), values.max()
+                                   if values_min == values_max:
+                                        hist_max = values_min + 1.
+                                   else:
+                                        hist_max = values_max
+                                   bins = np.geomspace(
+                                        values_min, 
+                                        hist_max, 
+                                        num=n_bins,
+                                   )
+                              else:
+                                  continue 
                          else:
                               bins = n_bins
                          try:
