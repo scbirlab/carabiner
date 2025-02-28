@@ -224,7 +224,7 @@ def scattergrid(
                     labels = {"label": ":".join(map(str, group_name))} if not dummy_group else {}
                     if make_histogram:
                          if xscale == "log":
-                              values = group_df.query(f"{grid_col_name} > 0")[grid_col_name].values
+                              values = group_df.query(f"`{grid_col_name}` > 0")[grid_col_name].values
                               values = values[np.isfinite(values)]
                               if values.size > 0:
                                    values_min, values_max = values.min(), values.max()
