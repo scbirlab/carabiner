@@ -224,21 +224,33 @@ def scattergrid(
                     labels = {"label": ":".join(map(str, group_name))} if not dummy_group else {}
                     if make_histogram:
                          if xscale == "log":
-                              values = group_df[grid_col_name].values
-                              bins = np.geomspace(
-                                   values.min(), 
-                                   values.max(), 
-                                   num=n_bins,
-                              )
+                              values = group_df.query(f"`{grid_col_name}` > 0")[grid_col_name].values
+                              values = values[np.isfinite(values)]
+                              if values.size > 0:
+                                   values_min, values_max = values.min(), values.max()
+                                   if values_min == values_max:
+                                        hist_max = values_min + 1.
+                                   else:
+                                        hist_max = values_max
+                                   bins = np.geomspace(
+                                        values_min, 
+                                        hist_max, 
+                                        num=n_bins,
+                                   )
+                              else:
+                                  continue 
                          else:
                               bins = n_bins
-                         ax.hist(
-                              grid_col_name, 
-                              data=group_df, 
-                              bins=bins,
-                              **_hist_opts,
-                              **labels,
-                         )
+                         try:
+                              ax.hist(
+                                   grid_col_name, 
+                                   data=group_df, 
+                                   bins=bins,
+                                   **_hist_opts,
+                                   **labels,
+                              )
+                         except ValueError as e:  # Usually some problem with value ranges, but shouldn't prevent plotting
+                              print_err(e)
                     else:
                          ax.scatter(
                               grid_col_name,
