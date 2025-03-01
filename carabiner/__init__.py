@@ -1,3 +1,7 @@
+from importlib.metadata import version
+
+__version__ = version("carabiner-tools")
+
 from .utils import (
     colorblind_palette, 
     print_err, 
