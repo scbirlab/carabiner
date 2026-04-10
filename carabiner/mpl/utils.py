@@ -229,9 +229,18 @@ def scattergrid(
           df = df.groupby(grouping)
           dummy_group = False
 
-     _scatter_opts = {"s": 3.}
+     _scatter_opts = {"s": 5., "facecolor": "none", "linewidth": 1.}
      _scatter_opts.update(scatter_opts or {})
-     _hist_opts = {"alpha": .7} if not dummy_group else {}
+     _hist_opts = {
+          "alpha": .7, 
+          "linewidth": 1., 
+          "histtype": "stepfilled",
+          "edgecolor": "lightgrey",
+     } 
+     if dummy_group:
+          _hist_opts.update({
+               "alpha": 1., 
+          })
      _hist_opts.update(hist_opts or {})
      _legend_opts = {}
      _legend_opts.update(legend_opts or {})
@@ -248,7 +257,8 @@ def scattergrid(
                xscale = "log" if grid_col_name in log else "linear"
                yscale = "log" if (grid_row_name in log and not make_histogram) else "linear"
                ylabel = grid_row_name if not make_histogram else "Frequency"
-               for group_name, group_df in df:
+               color = f"C{i}"
+               for i, (group_name, group_df) in enumerate(df):
                     labels = {"label": ":".join(map(str, group_name))} if not dummy_group else {}
                     if make_histogram:
                          if xscale == "log":
@@ -274,6 +284,7 @@ def scattergrid(
                                    grid_col_name, 
                                    data=group_df, 
                                    bins=bins,
+                                   fill=color,
                                    **_hist_opts,
                                    **labels,
                               )
@@ -283,7 +294,8 @@ def scattergrid(
                          ax.scatter(
                               grid_col_name,
                               grid_row_name, 
-                              data=group_df, 
+                              data=group_df,
+                              edgecolor=color,
                               **_scatter_opts,
                               **labels,
                          )
