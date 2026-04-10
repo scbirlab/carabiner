@@ -89,22 +89,26 @@ def colorblind_palette(
     
     Examples
     --------
-    >>> colorblind_palette(range(2))
+    >>> colorblind_palette(range(2), name="vibrant_0")
     ('#EE7733', '#0077BB')
+    >>> colorblind_palette(range(2))
+    ('#0077BB', '#33BBEE')
     >>> colorblind_palette(slice(3, 6))
-    ('#EE3377', '#CC3311', '#009988')
-    >>> colorblind_palette()
+    ('#EE7733', '#CC3311', '#EE7733')
+    >>> colorblind_palette(name="vibrant_0")
     ('#EE7733', '#0077BB', '#33BBEE', '#EE3377', '#CC3311', '#009988', '#BBBBBB', '#000000')
+    >>> colorblind_palette(name="muted")
+    ('#332288', '#88CCEE', '#44AA99', '#117733', '#999933', '#DDCC77', '#CC6677', '#882255', '#AA4499', '#DDDDDD')
     
     """
 
-    return _colorblind_palette(i)
+    return _colorblind_palette(i=i, name=name)
     
 
 @singledispatch
 def _colorblind_palette(
     i: Any,
-    name: str
+    name: str = DEFAULT_PALETTE
 ):
     pal = TOL_PALETTES.get(name, TOL_PALETTES[DEFAULT_PALETTE])
     try:
@@ -116,7 +120,7 @@ def _colorblind_palette(
 @_colorblind_palette.register
 def _(
     i: None,
-    name: str
+    name: str = DEFAULT_PALETTE
 ) -> Tuple[str]:
     return TOL_PALETTES.get(name, TOL_PALETTES[DEFAULT_PALETTE])
 
@@ -124,7 +128,7 @@ def _(
 @_colorblind_palette.register
 def _(
     i: slice,
-    name: str
+    name: str = DEFAULT_PALETTE
 ) -> Tuple[str]:
     return TOL_PALETTES.get(name, TOL_PALETTES[DEFAULT_PALETTE])[i]
 
@@ -132,7 +136,7 @@ def _(
 @_colorblind_palette.register
 def _(
     i: int,
-    name: str
+    name: str = DEFAULT_PALETTE
 ) -> Tuple[str]:
     return TOL_PALETTES.get(name, TOL_PALETTES[DEFAULT_PALETTE])[i]
 
