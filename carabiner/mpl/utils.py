@@ -256,7 +256,12 @@ def scattergrid(
                make_histogram = grid_row_name == grid_col_name
                xscale = "log" if grid_col_name in log else "linear"
                yscale = "log" if (grid_row_name in log and not make_histogram) else "linear"
-               ylabel = grid_row_name if not make_histogram else "Frequency"
+               if not make_histogram:
+                    ylabel = grid_row_name
+               elif hist_opts.get("density", False):
+                    ylabel = "Density"
+               else: 
+                    ylabel = "Frequency"
                for i, (group_name, group_df) in enumerate(df):
                     color = f"C{i}"
                     labels = {"label": ":".join(map(str, group_name))} if not dummy_group else {}
