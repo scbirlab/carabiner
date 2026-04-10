@@ -1,6 +1,6 @@
 """Utilities for matplotlib."""
 
-from typing import Any, Callable, Iterable, Mapping, Tuple, Optional, Union
+from typing import Any, Callable, Iterable, Mapping, Tuple, List, Optional, Union
 from functools import wraps
 import os
 
@@ -18,14 +18,41 @@ else:
 from tqdm.auto import tqdm
 
 from ..cast import cast
-from ..utils import colorblind_palette as utils_colorblind_palette, print_err
+from ..utils import TOL_PALETTES, colorblind_palette as utils_colorblind_palette, print_err
 
 TFigAx = Tuple[figure.Figure, axes.Axes]
 
 colorblind_palette = utils_colorblind_palette
 
 # Set default color cycle on import
-rcParams['axes.prop_cycle'] = cycler(color=colorblind_palette())
+rcParams["axes.prop_cycle"] = cycler(color=colorblind_palette())
+from matplotlib import rcParams
+rcParams["font.sans-serif"] = [
+    "Nimbus Sans",  # widely available, free
+    "Helvetica",    # available on MacOS
+    "Arial",        # available on Windows
+    "DejaVu Sans",  # available on Linux, mpl default
+    "FreeSans",     # widely available, free
+    "sans-serif",   # system default
+]
+
+def set_plot_palette(palette: Union[str, Iterable[str]]) -> Tuple[str]:
+     if isinstance(palette, str):
+          if palette in TOL_PALETTES:
+               palette = colorblind_palette(name=palette)
+          else:
+               raise ValueError(f"Palette named '{palette}' not built-in. Try one of {', '.join(TOL_PALETTES)}.")
+     rcParams["axes.prop_cycle"] = cycler(color=palette)
+     return palette
+
+
+def set_plot_font(font: str, category: str = "sans-serif") -> List[str]:
+     valid_categories = ("sans-serif", "serif")
+     if category not in valid_categories:
+          raise ValueError(f"Invalid font category: {category}. Try one of {', '.join(valid_categories)}.")
+     rcParams[f"font.{category}"] = [font] + [f for f in rcParams[f"font.{category}"] if f != font]
+     return rcParams[f"font.{category}"]
+
 
 def grid(
      nrow: int = 1, 
@@ -202,9 +229,18 @@ def scattergrid(
           df = df.groupby(grouping)
           dummy_group = False
 
-     _scatter_opts = {"s": 3.}
+     _scatter_opts = {"s": 5., "facecolor": "none", "linewidth": 1.}
      _scatter_opts.update(scatter_opts or {})
-     _hist_opts = {"alpha": .7} if not dummy_group else {}
+     _hist_opts = {
+          "alpha": .7, 
+          "linewidth": 1., 
+          "histtype": "stepfilled",
+          "edgecolor": "lightgrey",
+     } 
+     if dummy_group:
+          _hist_opts.update({
+               "alpha": 1., 
+          })
      _hist_opts.update(hist_opts or {})
      _legend_opts = {}
      _legend_opts.update(legend_opts or {})
@@ -212,6 +248,7 @@ def scattergrid(
      fig, axes = grid(
           nrow=len(grid_rows), 
           ncol=len(grid_columns),
+          squeeze=False,
           *args, **kwargs
      )
      for axrow, grid_row_name in zip(tqdm(axes), grid_rows):
@@ -219,8 +256,14 @@ def scattergrid(
                make_histogram = grid_row_name == grid_col_name
                xscale = "log" if grid_col_name in log else "linear"
                yscale = "log" if (grid_row_name in log and not make_histogram) else "linear"
-               ylabel = grid_row_name if not make_histogram else "Frequency"
-               for group_name, group_df in df:
+               if not make_histogram:
+                    ylabel = grid_row_name
+               elif hist_opts.get("density", False):
+                    ylabel = "Density"
+               else: 
+                    ylabel = "Frequency"
+               for i, (group_name, group_df) in enumerate(df):
+                    color = f"C{i}"
                     labels = {"label": ":".join(map(str, group_name))} if not dummy_group else {}
                     if make_histogram:
                          if xscale == "log":
@@ -246,6 +289,7 @@ def scattergrid(
                                    grid_col_name, 
                                    data=group_df, 
                                    bins=bins,
+                                   fill=color,
                                    **_hist_opts,
                                    **labels,
                               )
@@ -255,7 +299,8 @@ def scattergrid(
                          ax.scatter(
                               grid_col_name,
                               grid_row_name, 
-                              data=group_df, 
+                              data=group_df,
+                              edgecolor=color,
                               **_scatter_opts,
                               **labels,
                          )
@@ -274,7 +319,7 @@ def figsaver(
      output_dir: str = ".",
      prefix: Optional[str] = None,
      dpi: int = 300, 
-     format: str = 'png', 
+     format: Union[str, Iterable[str]] = "png", 
 ) -> Callable[[figure.Figure, str, int, str, Optional[DataFrame]], None]:
 
      """Create a function to save figures in a predefined location.
@@ -287,8 +332,8 @@ def figsaver(
           Prefix for filenames. Default: no prefix.
      dpi : int, optional
           Resolution of saved figures. Default: 300.
-     format : str, optional
-          File format of figures. Default: "png".
+     format : str or Iterable, optional
+          File format(s) of figures. Default: "png".
 
      Returns
      -------
@@ -303,6 +348,11 @@ def figsaver(
      if not os.path.exists(output_dir):
           os.mkdir(output_dir)
 
+     if isinstance(format, str):
+          format = [format]
+     if isinstance(format, tuple):
+          format = list(format)
+
      def _figsave(
           fig: figure.Figure, 
           name: str, 
@@ -311,13 +361,14 @@ def figsaver(
           """
 
           """
-          figname = os.path.join(output_dir, f"{prefix}{name}.{format}")
-          print_err(f"Saving plot at {figname}")
-          fig.savefig(
-               figname, 
-               dpi=dpi, 
-               bbox_inches='tight',
-          )
+          for _format in format:
+               figname = os.path.join(output_dir, f"{prefix}{name}.{_format}")
+               print_err(f"Saving plot at {figname}")
+               fig.savefig(
+                    figname, 
+                    dpi=dpi, 
+                    bbox_inches="tight",
+               )
           if df is not None and isinstance(df, DataFrame):
                dataname = os.path.join(output_dir, f"{prefix}{name}.csv")
                print_err(f"Saving data at {dataname}")
