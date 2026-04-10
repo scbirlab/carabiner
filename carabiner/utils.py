@@ -93,7 +93,7 @@ def colorblind_palette(
     >>> colorblind_palette(range(2))
     ('#0077BB', '#33BBEE')
     >>> colorblind_palette(slice(3, 6))
-    ('#EE7733', '#CC3311', '#EE7733')
+    ('#EE7733', '#CC3311', '#EE3377')
     >>> colorblind_palette(name="vibrant_0")
     ('#EE7733', '#0077BB', '#33BBEE', '#EE3377', '#CC3311', '#009988', '#BBBBBB', '#000000')
     >>> colorblind_palette(name="muted")
