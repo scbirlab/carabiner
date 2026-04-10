@@ -258,7 +258,7 @@ def scattergrid(
                yscale = "log" if (grid_row_name in log and not make_histogram) else "linear"
                if not make_histogram:
                     ylabel = grid_row_name
-               elif hist_opts.get("density", False):
+               elif _hist_opts.get("density", False):
                     ylabel = "Density"
                else: 
                     ylabel = "Frequency"
