@@ -229,7 +229,7 @@ def scattergrid(
           df = df.groupby(grouping)
           dummy_group = False
 
-     _scatter_opts = {"s": 5., "facecolor": "none", "linewidth": 1.}
+     _scatter_opts = {"s": 5., "facecolor": "none", "linewidth": .5}
      _scatter_opts.update(scatter_opts or {})
      _hist_opts = {
           "alpha": .7, 
@@ -296,12 +296,13 @@ def scattergrid(
                          except ValueError as e:  # Usually some problem with value ranges, but shouldn't prevent plotting
                               print_err(e)
                     else:
+                         these_scatter_opts = {"edgecolor": "color"}
+                         these_scatter_opts.update(_scatter_opts)
                          ax.scatter(
                               grid_col_name,
                               grid_row_name, 
                               data=group_df,
-                              edgecolor=color,
-                              **_scatter_opts,
+                              **these_scatter_opts,
                               **labels,
                          )
                ax.set(
