@@ -26,6 +26,15 @@ colorblind_palette = utils_colorblind_palette
 
 # Set default color cycle on import
 rcParams['axes.prop_cycle'] = cycler(color=colorblind_palette())
+from matplotlib import rcParams
+rcParams['font.sans-serif'] = [
+    "Nimbus Sans",
+    "Helvetica",
+    "Arial",
+    "DejaVu Sans",
+    "FreeSans",
+    "sans-serif"
+]
 
 def grid(
      nrow: int = 1, 
