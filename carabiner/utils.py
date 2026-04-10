@@ -2,7 +2,6 @@
 
 from typing import Any, Iterable, Mapping, Tuple, Optional
 
-from functools import singledispatch
 from itertools import chain
 
 import sys
@@ -103,42 +102,21 @@ def colorblind_palette(
     """
 
     return _colorblind_palette(i=i, name=name)
-    
 
-@singledispatch
+
 def _colorblind_palette(
     i: Any,
     name: str = DEFAULT_PALETTE
-):
+) -> Tuple[str]:
     pal = TOL_PALETTES.get(name, TOL_PALETTES[DEFAULT_PALETTE])
-    try:
+    if i is None:
+        return pal
+    if isinstance(i, Iterable):
         return tuple(pal[j] for j in i)
-    except:
+    elif isinstance(i, (slice, int)):
+        return pal[i]
+    else:
         raise NotImplementedError(f"No method for colorblind_palette for type {type(i)}: {i}.")
-    
-
-@_colorblind_palette.register
-def _(
-    i: None,
-    name: str = DEFAULT_PALETTE
-) -> Tuple[str]:
-    return TOL_PALETTES.get(name, TOL_PALETTES[DEFAULT_PALETTE])
-
-
-@_colorblind_palette.register
-def _(
-    i: slice,
-    name: str = DEFAULT_PALETTE
-) -> Tuple[str]:
-    return TOL_PALETTES.get(name, TOL_PALETTES[DEFAULT_PALETTE])[i]
-
-
-@_colorblind_palette.register
-def _(
-    i: int,
-    name: str = DEFAULT_PALETTE
-) -> Tuple[str]:
-    return TOL_PALETTES.get(name, TOL_PALETTES[DEFAULT_PALETTE])[i]
 
 
 def print_err(*args, **kwargs) -> None:
