@@ -13,6 +13,7 @@ except ImportError:
                       "\n\t$ pip install carabiner[mpl]\n")
 else:
     from matplotlib import axes, cycler, figure, rcParams, legend
+    import matplotlib
     import numpy as np
     from pandas import DataFrame
 from tqdm.auto import tqdm
@@ -26,7 +27,6 @@ colorblind_palette = utils_colorblind_palette
 
 # Set default color cycle on import
 rcParams["axes.prop_cycle"] = cycler(color=colorblind_palette())
-from matplotlib import rcParams
 rcParams["font.sans-serif"] = [
     "Helvetica",    # available on MacOS
     "Arial",        # available on Windows
@@ -35,6 +35,10 @@ rcParams["font.sans-serif"] = [
     "FreeSans",     # widely available, free
     "sans-serif",   # system default
 ]
+rcParams["axes.titlesize"] = 14.
+rcParams["axes.labelsize"] = 14.
+rcParams["xtick.labelsize"] = 12.
+rcParams["ytick.labelsize"] = 12.
 
 def set_plot_palette(palette: Union[str, Iterable[str]]) -> Tuple[str]:
      if isinstance(palette, str):
@@ -229,7 +233,7 @@ def scattergrid(
           df = df.groupby(grouping)
           dummy_group = False
 
-     _scatter_opts = {"s": 5., "facecolor": "none", "linewidth": .5}
+     _scatter_opts = {"s": 15., "facecolor": "none", "linewidth": .5}
      _scatter_opts.update(scatter_opts or {})
      _hist_opts = {
           "alpha": .7, 
@@ -286,8 +290,7 @@ def scattergrid(
                               bins = n_bins
                          try:
                               ax.hist(
-                                   grid_col_name, 
-                                   data=group_df, 
+                                   group_df[grid_col_name],
                                    bins=bins,
                                    fill=color,
                                    **_hist_opts,
@@ -296,12 +299,11 @@ def scattergrid(
                          except ValueError as e:  # Usually some problem with value ranges, but shouldn't prevent plotting
                               print_err(e)
                     else:
-                         these_scatter_opts = {"edgecolor": "color"}
+                         these_scatter_opts = {"edgecolor": color}
                          these_scatter_opts.update(_scatter_opts)
                          ax.scatter(
-                              grid_col_name,
-                              grid_row_name, 
-                              data=group_df,
+                              x=group_df[grid_col_name],
+                              y=group_df[grid_row_name],
                               **these_scatter_opts,
                               **labels,
                          )
