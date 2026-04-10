@@ -28,9 +28,9 @@ colorblind_palette = utils_colorblind_palette
 rcParams["axes.prop_cycle"] = cycler(color=colorblind_palette())
 from matplotlib import rcParams
 rcParams["font.sans-serif"] = [
-    "Nimbus Sans",  # widely available, free
     "Helvetica",    # available on MacOS
     "Arial",        # available on Windows
+    "Nimbus Sans",  # widely available, free
     "DejaVu Sans",  # available on Linux, mpl default
     "FreeSans",     # widely available, free
     "sans-serif",   # system default
@@ -258,7 +258,7 @@ def scattergrid(
                yscale = "log" if (grid_row_name in log and not make_histogram) else "linear"
                if not make_histogram:
                     ylabel = grid_row_name
-               elif hist_opts.get("density", False):
+               elif _hist_opts.get("density", False):
                     ylabel = "Density"
                else: 
                     ylabel = "Frequency"
