@@ -1,6 +1,6 @@
 """Utilities for matplotlib."""
 
-from typing import Any, Callable, Iterable, Mapping, Tuple, Optional, Union
+from typing import Any, Callable, Iterable, Mapping, Tuple, List, Optional, Union
 from functools import wraps
 import os
 
@@ -18,23 +18,41 @@ else:
 from tqdm.auto import tqdm
 
 from ..cast import cast
-from ..utils import colorblind_palette as utils_colorblind_palette, print_err
+from ..utils import TOL_PALETTES, colorblind_palette as utils_colorblind_palette, print_err
 
 TFigAx = Tuple[figure.Figure, axes.Axes]
 
 colorblind_palette = utils_colorblind_palette
 
 # Set default color cycle on import
-rcParams['axes.prop_cycle'] = cycler(color=colorblind_palette())
+rcParams["axes.prop_cycle"] = cycler(color=colorblind_palette())
 from matplotlib import rcParams
-rcParams['font.sans-serif'] = [
-    "Nimbus Sans",
-    "Helvetica",
-    "Arial",
-    "DejaVu Sans",
-    "FreeSans",
-    "sans-serif"
+rcParams["font.sans-serif"] = [
+    "Nimbus Sans",  # widely available, free
+    "Helvetica",    # available on MacOS
+    "Arial",        # available on Windows
+    "DejaVu Sans",  # available on Linux, mpl default
+    "FreeSans",     # widely available, free
+    "sans-serif",   # system default
 ]
+
+def set_plot_palette(palette: Union[str, Iterable[str]]) -> Tuple[str]:
+     if isinstance(palette, str):
+          if palette in TOL_PALETTES:
+               palette = colorblind_palette(name=palette)
+          else:
+               raise ValueError(f"Palette named '{palette}' not built-in. Try one of {', '.join(TOL_PALETTES)}.")
+     rcParams["axes.prop_cycle"] = cycler(color=palette)
+     return palette
+
+
+def set_plot_font(font: str, category: str = "sans-serif") -> List[str]:
+     valid_categories = ("sans-serif", "serif")
+     if category not in valid_categories:
+          raise ValueError(f"Invalid font category: {category}. Try one of {', '.join(valid_categories)}.")
+     rcParams[f"font.{category}"] = [font] + [f for f in rcParams[f"font.{category}"] if f != font]
+     return rcParams[f"font.{category}"]
+
 
 def grid(
      nrow: int = 1, 
