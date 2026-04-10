@@ -302,7 +302,7 @@ def figsaver(
      output_dir: str = ".",
      prefix: Optional[str] = None,
      dpi: int = 300, 
-     format: str = 'png', 
+     format: Union[str, Iterable[str]] = "png", 
 ) -> Callable[[figure.Figure, str, int, str, Optional[DataFrame]], None]:
 
      """Create a function to save figures in a predefined location.
@@ -315,8 +315,8 @@ def figsaver(
           Prefix for filenames. Default: no prefix.
      dpi : int, optional
           Resolution of saved figures. Default: 300.
-     format : str, optional
-          File format of figures. Default: "png".
+     format : str or Iterable, optional
+          File format(s) of figures. Default: "png".
 
      Returns
      -------
@@ -331,6 +331,11 @@ def figsaver(
      if not os.path.exists(output_dir):
           os.mkdir(output_dir)
 
+     if isinstance(format, str):
+          format = [format]
+     if isinstance(format, tuple):
+          format = list(format)
+
      def _figsave(
           fig: figure.Figure, 
           name: str, 
@@ -339,13 +344,14 @@ def figsaver(
           """
 
           """
-          figname = os.path.join(output_dir, f"{prefix}{name}.{format}")
-          print_err(f"Saving plot at {figname}")
-          fig.savefig(
-               figname, 
-               dpi=dpi, 
-               bbox_inches='tight',
-          )
+          for _format in format:
+               figname = os.path.join(output_dir, f"{prefix}{name}.{_format}")
+               print_err(f"Saving plot at {figname}")
+               fig.savefig(
+                    figname, 
+                    dpi=dpi, 
+                    bbox_inches="tight",
+               )
           if df is not None and isinstance(df, DataFrame):
                dataname = os.path.join(output_dir, f"{prefix}{name}.csv")
                print_err(f"Saving data at {dataname}")
