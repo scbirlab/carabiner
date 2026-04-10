@@ -239,6 +239,7 @@ def scattergrid(
      fig, axes = grid(
           nrow=len(grid_rows), 
           ncol=len(grid_columns),
+          squeeze=False,
           *args, **kwargs
      )
      for axrow, grid_row_name in zip(tqdm(axes), grid_rows):
