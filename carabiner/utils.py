@@ -9,13 +9,68 @@ import sys
 
 __all__ = ["colorblind_palette", "print_err", "pprint_dict", "upper_and_lower"]
 
-_CBPAL = ('#EE7733', '#0077BB', '#33BBEE', 
-          '#EE3377', '#CC3311', '#009988', 
-          '#BBBBBB', "#000000")
+TOL_PALETTES = {
+    "vibrant": (
+        "#0077BB", 
+        "#33BBEE", 
+        "#009988", 
+        "#EE7733", 
+        "#CC3311", 
+        "#EE3377", 
+        "#BBBBBB", 
+        "#000000",
+    ),
+    "vibrant_0": (
+        "#EE7733", 
+        "#0077BB", 
+        "#33BBEE", 
+        "#EE3377", 
+        "#CC3311", 
+        "#009988", 
+        "#BBBBBB", 
+        "#000000",
+    ),
+    "muted": (
+        "#332288",
+        "#88CCEE",
+        "#44AA99",
+        "#117733",
+        "#999933",
+        "#DDCC77",
+        "#CC6677",
+        "#882255",
+        "#AA4499",
+        "#DDDDDD",
+    ),
+    "bright": (
+        "#4477AA",
+        "#66CCEE",
+        "#228833",
+        "#CCBB44",
+        "#EE6677",
+        "#AA3377",
+        "#BBBBBB",
+    ),
+    "medium contrast": (
+        "#FFFFFF",
+        "#EECC66",
+        "#EE99AA",
+        "#6699CC",
+        "#997700",
+        "#994455",
+        "#004488",
+        "#000000",
+    )
+}
 
-def colorblind_palette(i: Optional[Any] = None) -> Tuple[str]:
+DEFAULT_PALETTE = "vibrant"
 
-    """Provide hexadecimal codes for a colorblind-friendly qualitative palette.
+def colorblind_palette(
+    i: Optional[Any] = None,
+    name: str = DEFAULT_PALETTE
+) -> Tuple[str]:
+
+    """Provide hexadecimal codes for Tol's colorblind-friendly qualitative palette.
 
     Parameters
     ----------
@@ -47,30 +102,39 @@ def colorblind_palette(i: Optional[Any] = None) -> Tuple[str]:
     
 
 @singledispatch
-def _colorblind_palette(i: Any):
-    
+def _colorblind_palette(
+    i: Any,
+    name: str
+):
+    pal = TOL_PALETTES.get(name, TOL_PALETTES[DEFAULT_PALETTE])
     try:
-        return tuple(_CBPAL[j] for j in i)
+        return tuple(pal[j] for j in i)
     except:
         raise NotImplementedError(f"No method for colorblind_palette for type {type(i)}: {i}.")
     
 
 @_colorblind_palette.register
-def _(i: None) -> Tuple[str]:
-
-    return _CBPAL
-
-
-@_colorblind_palette.register
-def _(i: slice) -> Tuple[str]:
-
-    return _CBPAL[i]
+def _(
+    i: None,
+    name: str
+) -> Tuple[str]:
+    return TOL_PALETTES.get(name, TOL_PALETTES[DEFAULT_PALETTE])
 
 
 @_colorblind_palette.register
-def _(i: int) -> Tuple[str]:
+def _(
+    i: slice,
+    name: str
+) -> Tuple[str]:
+    return TOL_PALETTES.get(name, TOL_PALETTES[DEFAULT_PALETTE])[i]
 
-    return _CBPAL[i]
+
+@_colorblind_palette.register
+def _(
+    i: int,
+    name: str
+) -> Tuple[str]:
+    return TOL_PALETTES.get(name, TOL_PALETTES[DEFAULT_PALETTE])[i]
 
 
 def print_err(*args, **kwargs) -> None:
