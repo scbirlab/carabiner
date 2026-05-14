@@ -4,6 +4,8 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/carabiner-tools)
 ![PyPI](https://img.shields.io/pypi/v/carabiner-tools)
 
+<img src="docs/source/_static/logo.svg" width="200">
+
 A ragtag collection of useful Python functions and classes.
 
 - [Installation](#installation)
