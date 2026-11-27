@@ -93,10 +93,10 @@ def cio(x, *args, **kwargs) -> TextIOWrapper:
 
     Examples
     --------
-    >>> cio('Hello.txt')  # doctest: +SKIP
-    <_io.TextIOWrapper name='Hello.txt' mode='r' encoding='UTF-8'>
-    >>> cio('Hello.txt', 'w')
-    <_io.TextIOWrapper name='Hello.txt' mode='w' encoding='UTF-8'>
+    >>> cio('Hello.txt').mode == "r", cio('Hello.txt').name == "Hello.txt"
+    (True, True)
+    >>> cio('Hello.txt', 'w').mode == "w"
+    True
     >>> list(cio(StringIO("Hello\nworld")))
     ['Hello\n', 'world']
 
