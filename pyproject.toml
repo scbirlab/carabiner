@@ -33,7 +33,7 @@ deep = ["tensorflow"]
 pd = ["pandas", "openpyxl==3.1.5"]
 mpl = ["carabiner-tools[pd]", "matplotlib", "numpy"]
 all = ["carabiner-tools[deep,mpl,pd]"]
-dev = ["carabiner-tools[all]", "pytest", "flake8", "pytest-cov"]
+dev = ["carabiner-tools[mpl,pd]", "pytest", "flake8", "pytest-cov"]
 
 
 [project.urls]
